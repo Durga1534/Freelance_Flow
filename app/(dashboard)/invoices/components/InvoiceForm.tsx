@@ -57,10 +57,10 @@ type Client = {
   notes: string;
 };
 
-const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
-const collectionId = process.env.NEXT_PUBLIC_COLLECTION_INVOICES_ID;
-const clientsId = process.env.NEXT_PUBLIC_COLLECTION_CLIENTS_ID;
-const invoiceItemsId = process.env.NEXT_PUBLIC_COLLECTION_INVOICES_ITEMS_ID;
+const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
+const collectionId = process.env.NEXT_PUBLIC_COLLECTION_INVOICES_ID!;
+const clientsId = process.env.NEXT_PUBLIC_COLLECTION_CLIENTS_ID!;
+const invoiceItemsId = process.env.NEXT_PUBLIC_COLLECTION_INVOICES_ITEMS_ID!;
 
 const InvoiceForm = ({ onClose }: { onClose?: () => void }) => {
   const [clients, setClients] = useState<Client[]>([]);
