@@ -1,6 +1,11 @@
 import { databases, Query } from "./appwrite";
 
-const databaseId = "68537fd80002a07c3005";
+const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
+const CLIENTS_ID = process.env.NEXT_PUBLIC_COLLECTION_CLIENTS_ID!;
+const PROJECTS_ID = process.env.NEXT_PUBLIC_COLLECTION_PROJECTS_ID!;
+const INVOICES_ID = process.env.NEXT_PUBLIC_COLLECTION_INVOICES_ID!;
+const INVOICE_ITEMS_ID = process.env.NEXT_PUBLIC_COLLECTION_INVOICES_ITEMS_ID!;
+const PAYMENTS_ID = process.env.NEXT_PUBLIC_COLLECTION_PAYMENT_ID!;
 
 const getQuery = (userId?: string) =>
   userId ? [Query.equal("userId", userId)] : [];
@@ -8,51 +13,31 @@ const getQuery = (userId?: string) =>
 export default {
   clients: {
     getAll: async (userId?: string) => {
-      return await databases.listDocuments(
-        databaseId,
-        "685382d20009506336c5",
-        getQuery(userId)
-      );
+      return await databases.listDocuments(databaseId, CLIENTS_ID, getQuery(userId));
     },
   },
 
   projects: {
     getAll: async (userId?: string) => {
-      return await databases.listDocuments(
-        databaseId,
-        "6853def50008468fd583",
-        getQuery(userId)
-      );
+      return await databases.listDocuments(databaseId, PROJECTS_ID, getQuery(userId));
     },
   },
 
   invoices: {
     getAll: async (userId?: string) => {
-      return await databases.listDocuments(
-        databaseId,
-        "6854dee1000bb6583a6d",
-        getQuery(userId)
-      );
+      return await databases.listDocuments(databaseId, INVOICES_ID, getQuery(userId));
     },
   },
 
   invoiceItems: {
     getAll: async (userId?: string) => {
-      return await databases.listDocuments(
-        databaseId,
-        "6854e66100129eb5b9a8",
-        getQuery(userId)
-      );
+      return await databases.listDocuments(databaseId, INVOICE_ITEMS_ID, getQuery(userId));
     },
   },
 
   payments: {
     getAll: async (userId?: string) => {
-      return await databases.listDocuments(
-        databaseId,
-        "6854e6e50034d6f8acf5",
-        getQuery(userId)
-      );
+      return await databases.listDocuments(databaseId, PAYMENTS_ID, getQuery(userId));
     },
   },
 };
