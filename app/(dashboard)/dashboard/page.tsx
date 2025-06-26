@@ -136,7 +136,7 @@ export default function DashboardPage() {
 
         // Count active projects
         const activeProjects = projects.filter((p: any) => 
-          p.status === "active" || p.status === "Active" || p.status === "in-progress"
+          p.status === "progress" || p.status === "Progress"
         );
 
         // Count pending invoices
