@@ -3,8 +3,8 @@
 import { useState } from "react"
 import { account ,databases, ID } from "@/lib/appwrite"
 
-const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
-const collectionId = process.env.NEXT_PUBLIC_COLLECTION_PROJECTS_ID;
+const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
+const collectionId = process.env.NEXT_PUBLIC_COLLECTION_PROJECTS_ID!;
 
 const ProjectsForm = ({onProjectAdded, isOpen, onClose} : {
   onProjectAdded: () => void,
