@@ -1,7 +1,7 @@
 import { Query } from "appwrite";
 import { databases } from "./appwrite";
 
-const databaseId = "68537fd80002a07c3005";
+const databaseId =  process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
 
 export const globalSearch = async (searchText: string, userId: string) => {
   if (!searchText || !userId) return [];
