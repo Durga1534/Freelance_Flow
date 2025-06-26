@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { databases, Query } from "@/lib/appwrite";
 
-const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
-const invoiceCollectionId = process.env.NEXT_PUBLIC_COLLECTION_INVOICES_ID;
-const itemCollectionId = process.env.NEXT_PUBLIC_COLLECTION_INVOICES_ITEMS_ID;
+const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
+const invoiceCollectionId = process.env.NEXT_PUBLIC_COLLECTION_INVOICES_ID!;
+const itemCollectionId = process.env.NEXT_PUBLIC_COLLECTION_INVOICES_ITEMS_ID!;
 
 export default function SuccessPage() {
   const searchParams = useSearchParams();
