@@ -7,9 +7,9 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import ProfileUpload from "./profileUpload";
 
-const BUCKET_ID = process.env.NEXT_PUBLIC_BUCKET_ID;
-const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID; 
-const USERS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_USERS_ID;
+const BUCKET_ID = process.env.NEXT_PUBLIC_BUCKET_ID!;
+const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!; 
+const USERS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_USERS_ID!;
 
 export default function SettingsPage() {
   const [user, setUser] = useState<any>(null);
