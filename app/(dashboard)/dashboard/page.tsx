@@ -361,7 +361,7 @@ export default function DashboardPage() {
             return (
               <div
                 key={stat.name}
-                className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105 col-span-1 lg:col-span-2"
+                className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
