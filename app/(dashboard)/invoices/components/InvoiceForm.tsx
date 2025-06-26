@@ -220,97 +220,17 @@ const InvoiceForm = ({ onClose }: { onClose?: () => void }) => {
 
   return newInvoice;
 },
-    onSuccess: async (newInvoice) => {
-        queryClient.invalidateQueries({ queryKey: ["invoices"] });
-
-        try {
-          const res = await fetch("/api/generate-pdf", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              invoice: {
-                id: newInvoice.$id,
-                clientName: newInvoice.client_company || newInvoice.client_email,
-                dueDate: newInvoice.due_date,
-                items: watch("items"),
-                total: newInvoice.total_amount,
-              },
-            }),
-          });
-
-          const result = await res.json();
-
-          if (result.success && result.previewUrl) {
-            console.log(" PDF generated:", result.previewUrl);
-
-            await databases.updateDocument(
-              databaseId,
-              collectionId,
-              newInvoice.$id,
-              {
-                pdf_url: result.previewUrl,
-              }
-            );
-          } else {
-            console.warn(" PDF not generated", result.error);
-          }
-        } catch (err) {
-          console.error(" Failed to generate PDF", err);
-        }
-
-        sendInvoiceEmail(newInvoice);
-
-        if (watch("is_recurring")) {
-          scheduleRecurringInvoice(newInvoice);
-        }
-
-        onClose?.();
-        router.push("/invoices");
-},
-
-    onError: (error) => {
-      console.error("Failed to create invoice:", error);
-    },
-  });
-
-  const onSubmit = (data: InvoiceFormData) => {
-    createInvoiceMutation.mutate(data);
-  };
-
-  const sendInvoiceEmail = async (invoice: any) => {
-    try {
-      await fetch('/send-invoice-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          invoiceId: invoice.$id,
-          clientEmail: invoice.client_email,
-          invoiceNumber: invoice.invoice_number,
-          amount: invoice.total_amount,
-          currency: invoice.currency,
-        }),
-      });
-    } catch (error) {
-      console.error('Failed to send email:', error);
-    }
-  };
-
-  const scheduleRecurringInvoice = async (invoice: any) => {
-    try {
-      await fetch('/api/schedule-recurring-invoice', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          invoiceId: invoice.$id,
-          interval: invoice.recurring_interval,
-          endDate: invoice.recurring_end_date,
-        }),
-      });
-    } catch (error) {
-      console.error('Failed to schedule recurring invoice:', error);
-    }
-  };
-
+      onSuccess: async (newInvoice) => {
+            queryClient.invalidateQueries({ queryKey: ["invoices"] });
+            sendInvoiceEmail(newInvoice);
+          
+            if (watch("is_recurring")) {
+              scheduleRecurringInvoice(newInvoice);
+            }
+          
+            onClose?.();
+            router.push("/invoices");
+          };
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-card p-6 rounded shadow max-w-4xl mx-auto">
       <h2 className="text-2xl font-bold mb-4 text-foreground">Create Invoice</h2>
