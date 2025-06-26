@@ -175,62 +175,54 @@ const InvoiceForm = ({ onClose }: { onClose?: () => void }) => {
   };
 
   const createInvoiceMutation = useMutation({
-    mutationFn: async (data: InvoiceFormData) => {
-      const user = await account.get();
-  const {
-    items,
-    ...invoiceDataWithoutItems
-  } = {
-    ...data,
-    subtotal: Math.round(data.subtotal * 100) / 100,
-    tax_amount: Math.round(data.tax_amount * 100) / 100,
-    discount_amount: Math.round(data.discount_amount * 100) / 100,
-    total_amount: Math.round(data.total_amount * 100) / 100,
-    paid_amount: Math.round(data.paid_amount * 100) / 100,
-  };
+  mutationFn: async (data: InvoiceFormData) => {
+    const user = await account.get();
+    const { items, ...invoiceDataWithoutItems } = {
+      ...data,
+      subtotal: Math.round(data.subtotal * 100) / 100,
+      tax_amount: Math.round(data.tax_amount * 100) / 100,
+      discount_amount: Math.round(data.discount_amount * 100) / 100,
+      total_amount: Math.round(data.total_amount * 100) / 100,
+      paid_amount: Math.round(data.paid_amount * 100) / 100,
+    };
 
-  const newInvoice = await databases.createDocument(
-    databaseId,
-    collectionId,
-    ID.unique(),
-    {
-       ...invoiceDataWithoutItems,
-       userId: user.$id,
-    }
-   
-  );
+    const newInvoice = await databases.createDocument(
+      databaseId,
+      collectionId,
+      ID.unique(),
+      {
+        ...invoiceDataWithoutItems,
+        userId: user.$id,
+      }
+    );
 
-  await Promise.all(
-    items.map((item, index) => {
-      return databases.createDocument(
-        databaseId,
-        invoiceItemsId,
-        ID.unique(),
-        {
-          invoice_id: newInvoice.$id,
-          description: item.description,
-          quantity: item.quantity,
-          unit_price: item.rate,
-          total_price: item.amount,
-          item_order: index + 1,
-        }
-      );
-    })
-  );
+    await Promise.all(
+      items.map((item, index) =>
+        databases.createDocument(
+          databaseId,
+          invoiceItemsId,
+          ID.unique(),
+          {
+            invoice_id: newInvoice.$id,
+            description: item.description,
+            quantity: item.quantity,
+            unit_price: item.rate,
+            total_price: item.amount,
+            item_order: index + 1,
+          }
+        )
+      )
+    );
 
-  return newInvoice;
-},
-      onSuccess: async (newInvoice) => {
-            queryClient.invalidateQueries({ queryKey: ["invoices"] });
-            sendInvoiceEmail(newInvoice);
-          
-            if (watch("is_recurring")) {
-              scheduleRecurringInvoice(newInvoice);
-            }
-          
-            onClose?.();
-            router.push("/invoices");
-          });
+    return newInvoice;
+  },
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ["invoices"] });
+    onClose?.();
+    router.push("/invoices");
+  },
+});
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-card p-6 rounded shadow max-w-4xl mx-auto">
       <h2 className="text-2xl font-bold mb-4 text-foreground">Create Invoice</h2>
