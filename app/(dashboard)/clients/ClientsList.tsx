@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
-const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
-const collectionId = process.env.NEXT_PUBLIC_COLLECTION_CLIENTS_ID;
+const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
+const collectionId = process.env.NEXT_PUBLIC_COLLECTION_CLIENTS_ID!;
 
 type Client = {
   $id: string;
