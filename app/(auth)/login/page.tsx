@@ -87,6 +87,7 @@ function LoginPage() {
 
       
       await account.createOAuth2Session(
+        "google",
         `${window.location.origin}/dashboard`,
         `${window.location.origin}/login`
       )
