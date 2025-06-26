@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { databases } from "@/lib/appwrite";
 
-const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
-const collectionId = process.env.NEXT_PUBLIC_COLLECTION_INVOICES_ID;
+const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
+const collectionId = process.env.NEXT_PUBLIC_COLLECTION_INVOICES_ID!;
 
 
 
