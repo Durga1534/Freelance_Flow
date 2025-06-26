@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { account, databases, ID } from "@/lib/appwrite";
 
-const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
-const collectionId = process.env.NEXT_PUBLIC_COLLECTION_CLIENTS_ID;
+const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
+const collectionId = process.env.NEXT_PUBLIC_COLLECTION_CLIENTS_ID!;
 
 type ClientFields = {
   name: string;
