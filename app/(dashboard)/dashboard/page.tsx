@@ -43,6 +43,7 @@ interface StatItem {
   icon: any;
   color: string;
   bgColor: string;
+  paidInvoices?: any[];
 }
 
 const getCSSColor = (property: string): string => {
@@ -203,6 +204,12 @@ export default function DashboardPage() {
             icon: DollarSign,
             color: "text-purple-600",
             bgColor: "bg-purple-50",
+            paidInvoices: paidInvoicesThisMonth.map((inv: any) => ({
+              $id: inv.$id,
+              clientName: inv.clientName || inv.client?.name || "Unnamed Client",
+              amount: typeof inv.amount === "string" ? parseFloat(inv.amount) : (inv.amount || inv.total || inv.totalAmount || 0),
+              date: inv.date || inv.$createdAt,
+            })),
           },
         ];
 
@@ -254,18 +261,22 @@ export default function DashboardPage() {
         }));
         setProjectStatusData(projectStatusChart);
 
-        // 3. Invoice status distribution
+        // 3. Invoice status distribution - FIXED
         const invoiceStatusCounts = invoices.reduce((acc: any, invoice: any) => {
           const status = invoice.status || 'unknown';
           acc[status] = (acc[status] || 0) + 1;
           return acc;
         }, {});
 
+        console.log("Invoice status counts:", invoiceStatusCounts); // Debug log
+
         const invoiceStatusChart = Object.entries(invoiceStatusCounts).map(([status, count], index) => ({
           name: status.charAt(0).toUpperCase() + status.slice(1),
           value: count,
           color: chartColors[index % chartColors.length] || '#8B5CF6',
         }));
+        
+        console.log("Invoice status chart data:", invoiceStatusChart); // Debug log
         setInvoiceStatusData(invoiceStatusChart);
 
         // 4. Monthly overview combining multiple metrics
@@ -286,6 +297,7 @@ export default function DashboardPage() {
 
     fetchStats();
   }, [chartColors]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -344,38 +356,117 @@ export default function DashboardPage() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <div
-            key={stat.name}
-            className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105"
-          >
-            <div className="flex items-center">
-              <div className={classNames(stat.bgColor, "p-3 rounded-lg")}>
-                <stat.icon className={classNames(stat.color, "h-6 w-6")} />
-              </div>
-              <div className="ml-4 flex-1">
-                <p className="text-sm font-medium text-gray-600">{stat.name}</p>
-                <p className="text-2xl font-semibold text-gray-900 mt-1">{stat.value}</p>
-                <div className="flex items-center mt-2">
-                  {stat.changeType === "increase" ? (
-                    <TrendingUp className="h-4 w-4 text-green-600 mr-1" />
+        {stats.map((stat) => {
+          if (stat.name === "Monthly Revenue") {
+            return (
+              <div
+                key={stat.name}
+                className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105 col-span-1 lg:col-span-2"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className={classNames(stat.bgColor, "p-3 rounded-lg")}>
+                      <stat.icon className={classNames(stat.color, "h-6 w-6")} />
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">{stat.name}</p>
+                      <p className="text-2xl font-semibold text-gray-900 mt-1">
+                        {stat.value}
+                      </p>
+                      <div className="flex items-center mt-2">
+                        {stat.changeType === "increase" ? (
+                          <TrendingUp className="h-4 w-4 text-green-600 mr-1" />
+                        ) : (
+                          <TrendingDown className="h-4 w-4 text-red-600 mr-1" />
+                        )}
+                        <span
+                          className={classNames(
+                            stat.changeType === "increase"
+                              ? "text-green-600"
+                              : "text-red-600",
+                            "text-sm font-medium"
+                          )}
+                        >
+                          {stat.change}
+                        </span>
+                        <span className="text-gray-500 text-sm ml-1">
+                          from last month
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Show paid invoices list */}
+                <div className="mt-4">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                    Recent Paid Invoices
+                  </h4>
+                  {stat.paidInvoices?.length > 0 ? (
+                    <ul className="space-y-2 max-h-[180px] overflow-y-auto pr-1">
+                      {stat.paidInvoices.map((inv: any) => (
+                        <li
+                          key={inv.$id}
+                          className="flex justify-between items-center text-sm text-gray-600"
+                        >
+                          <span>
+                            {inv.clientName || "Unnamed Client"}
+                            <span className="ml-2 text-xs text-gray-400">
+                              ({new Date(inv.date || inv.$createdAt).toLocaleDateString()})
+                            </span>
+                          </span>
+                          <span className="font-medium text-gray-800">
+                            ${inv.amount?.toFixed(2)}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
                   ) : (
-                    <TrendingDown className="h-4 w-4 text-red-600 mr-1" />
+                    <p className="text-sm text-gray-500">No paid invoices yet.</p>
                   )}
-                  <span
-                    className={classNames(
-                      stat.changeType === "increase" ? "text-green-600" : "text-red-600",
-                      "text-sm font-medium"
+                </div>
+              </div>
+            );
+          }
+
+          // Keep other cards as-is
+          return (
+            <div
+              key={stat.name}
+              className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105"
+            >
+              <div className="flex items-center">
+                <div className={classNames(stat.bgColor, "p-3 rounded-lg")}>
+                  <stat.icon className={classNames(stat.color, "h-6 w-6")} />
+                </div>
+                <div className="ml-4 flex-1">
+                  <p className="text-sm font-medium text-gray-600">{stat.name}</p>
+                  <p className="text-2xl font-semibold text-gray-900 mt-1">
+                    {stat.value}
+                  </p>
+                  <div className="flex items-center mt-2">
+                    {stat.changeType === "increase" ? (
+                      <TrendingUp className="h-4 w-4 text-green-600 mr-1" />
+                    ) : (
+                      <TrendingDown className="h-4 w-4 text-red-600 mr-1" />
                     )}
-                  >
-                    {stat.change}
-                  </span>
-                  <span className="text-gray-500 text-sm ml-1">from last month</span>
+                    <span
+                      className={classNames(
+                        stat.changeType === "increase"
+                          ? "text-green-600"
+                          : "text-red-600",
+                        "text-sm font-medium"
+                      )}
+                    >
+                      {stat.change}
+                    </span>
+                    <span className="text-gray-500 text-sm ml-1">from last month</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Charts Grid */}
@@ -483,25 +574,45 @@ export default function DashboardPage() {
           </ResponsiveContainer>
         </div>
 
-        {/* Invoice Status Distribution */}
+        {/* Invoice Status Distribution - FIXED */}
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Invoice Status</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={invoiceStatusData} layout="horizontal">
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-              <XAxis type="number" stroke="#6B7280" />
-              <YAxis dataKey="name" type="category" stroke="#6B7280" width={80} />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'white', 
-                  border: '1px solid #E5E7EB',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                }}
-              />
-              <Bar dataKey="value" fill={chartColors[0]} radius={[0, 4, 4, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          {invoiceStatusData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={invoiceStatusData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                <XAxis dataKey="name" stroke="#6B7280" />
+                <YAxis stroke="#6B7280" />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'white', 
+                    border: '1px solid #E5E7EB',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  }}
+                />
+                <Bar 
+                  dataKey="value" 
+                  fill={chartColors[0]} 
+                  radius={[4, 4, 0, 0]}
+                >
+                  {invoiceStatusData.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={chartColors[index % chartColors.length]} 
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-[300px] text-gray-500">
+              <div className="text-center">
+                <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                <p>No invoice data available</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
