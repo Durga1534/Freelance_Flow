@@ -110,7 +110,8 @@ function RegisterPage() {
     setError("")
     
     try {
-      await account.createOAuth2Session(  
+      await account.createOAuth2Session(
+        "google",
         `${window.location.origin}/dashboard`,
         `${window.location.origin}/register`
       )
