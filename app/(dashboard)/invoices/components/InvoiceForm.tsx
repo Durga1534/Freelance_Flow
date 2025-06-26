@@ -279,7 +279,7 @@ const InvoiceForm = ({ onClose }: { onClose?: () => void }) => {
 
   const sendInvoiceEmail = async (invoice: any) => {
     try {
-      await fetch('/api/send-invoice-email', {
+      await fetch('/send-invoice-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

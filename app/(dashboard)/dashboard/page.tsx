@@ -128,9 +128,8 @@ export default function DashboardPage() {
           );
         });
 
-        // Calculate total revenue from paid invoices this month
         const totalRevenue = paidInvoicesThisMonth.reduce((sum: number, inv: any) => {
-          const amount = inv.amount || inv.total || inv.totalAmount || 0;
+          const amount = inv.paid_amount || inv.total_amount || 0;
           return sum + (typeof amount === 'string' ? parseFloat(amount) : amount);
         }, 0);
 
@@ -158,7 +157,7 @@ export default function DashboardPage() {
         });
 
         const lastMonthRevenue = paidInvoicesLastMonth.reduce((sum: number, inv: any) => {
-          const amount = inv.amount || inv.total || inv.totalAmount || 0;
+          const amount = inv.paid_amount || inv.total_amount || 0;
           return sum + (typeof amount === 'string' ? parseFloat(amount) : amount);
         }, 0);
 
@@ -205,9 +204,10 @@ export default function DashboardPage() {
             color: "text-purple-600",
             bgColor: "bg-purple-50",
             paidInvoices: paidInvoicesThisMonth.map((inv: any) => ({
-              $id: inv.$id,
-              clientName: inv.clientName || inv.client?.name || "Unnamed Client",
-              amount: typeof inv.amount === "string" ? parseFloat(inv.amount) : (inv.amount || inv.total || inv.totalAmount || 0),
+              amount: (() => {
+                const amount = inv.paid_amount || inv.total_amount || 0;
+                return typeof amount === "string" ? parseFloat(amount) : amount;
+              })(),
               date: inv.date || inv.$createdAt,
             })),
           },
@@ -232,7 +232,7 @@ export default function DashboardPage() {
               );
             })
             .reduce((sum: number, inv: any) => {
-              const amount = inv.amount || inv.total || inv.totalAmount || 0;
+              const amount = inv.paid_amount || inv.total_amount || 0;
               return sum + (typeof amount === 'string' ? parseFloat(amount) : amount);
             }, 0);
 
@@ -396,40 +396,10 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 </div>
-
-                {/* Show paid invoices list */}
-                <div className="mt-4">
-                  <h4 className="text-sm font-semibold text-gray-700 mb-2">
-                    Recent Paid Invoices
-                  </h4>
-                  {stat.paidInvoices?.length > 0 ? (
-                    <ul className="space-y-2 max-h-[180px] overflow-y-auto pr-1">
-                      {stat.paidInvoices.map((inv: any) => (
-                        <li
-                          key={inv.$id}
-                          className="flex justify-between items-center text-sm text-gray-600"
-                        >
-                          <span>
-                            {inv.clientName || "Unnamed Client"}
-                            <span className="ml-2 text-xs text-gray-400">
-                              ({new Date(inv.date || inv.$createdAt).toLocaleDateString()})
-                            </span>
-                          </span>
-                          <span className="font-medium text-gray-800">
-                            ${inv.amount?.toFixed(2)}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-sm text-gray-500">No paid invoices yet.</p>
-                  )}
-                </div>
               </div>
             );
           }
 
-          // Keep other cards as-is
           return (
             <div
               key={stat.name}
