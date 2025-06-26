@@ -88,39 +88,53 @@ export default function DashboardLayout({ children }) {
     };
   }, [search]);
 
-  useEffect(() => {
-    let timeoutId;
+ useEffect(() => {
+  let timeoutId;
 
-    const checkSessionAndStartTimer = async () => {
+  const resetTimer = () => {
+    if (timeoutId) clearTimeout(timeoutId);
+
+    timeoutId = setTimeout(async () => {
       try {
-        const sessionUser = await account.get();
-        setUser(sessionUser);
-        
-        await fetchUserProfileData(sessionUser.$id);
-        
-        setLoading(false);
-
-        // Auto logout after 30 minutes
-        timeoutId = setTimeout(async () => {
-          try {
-            await account.deleteSession("current");
-            router.push("/login");
-          } catch (err) {
-            console.error("Auto-logout failed:", err);
-          }
-        }, 30 * 60 * 1000);
+        await account.deleteSession("current");
+        router.push("/login");
       } catch (err) {
-        console.error("Session check failed:", err);
-        router.replace("/login");
+        console.error("Auto-logout failed:", err);
       }
-    };
+    }, 30 * 60 * 1000);
+  };
 
-    checkSessionAndStartTimer();
+  const activityEvents = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'];
 
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [router]);
+  const startIdleDetection = async () => {
+    try {
+      const sessionUser = await account.get();
+      setUser(sessionUser);
+
+      await fetchUserProfileData(sessionUser.$id);
+      setLoading(false);
+
+      resetTimer();
+
+      activityEvents.forEach((event) =>
+        window.addEventListener(event, resetTimer)
+      );
+    } catch (err) {
+      console.error("Session check failed:", err);
+      router.replace("/login");
+    }
+  };
+
+  startIdleDetection();
+
+  return () => {
+    if (timeoutId) clearTimeout(timeoutId);
+    activityEvents.forEach((event) =>
+      window.removeEventListener(event, resetTimer)
+    );
+  };
+}, [router]);
+
 
   useEffect(() => {
     const handleStorageChange = () => {
