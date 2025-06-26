@@ -5,8 +5,8 @@ import { account, databases, Query } from "@/lib/appwrite";
 import Link from "next/link";
 import { MoreHorizontal, Tag } from "lucide-react";
 
-const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
-const collectionId = process.env.NEXT_PUBLIC_COLLECTION_PROJECTS_ID;
+const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
+const collectionId = process.env.NEXT_PUBLIC_COLLECTION_PROJECTS_ID!;
 
 type Project = {
   $id: string;
