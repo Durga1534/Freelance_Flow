@@ -5,9 +5,9 @@ import { account, databases, ID, Query } from "@/lib/appwrite";
 import { format } from "date-fns";
 import { PauseCircle, PlayCircle, Trash2 } from "lucide-react";
 
-const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
-const timeCollectionId = process.env.NEXT_PUBLIC_COLLECTION_TIME_TRACKING_ID;
-const projectCollectionId = process.env.NEXT_PUBLIC_COLLECTION_PROJECTS_ID;
+const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
+const timeCollectionId = process.env.NEXT_PUBLIC_COLLECTION_TIME_TRACKING_ID!;
+const projectCollectionId = process.env.NEXT_PUBLIC_COLLECTION_PROJECTS_ID!;
 
 interface TimeEntry {
   $id: string;
