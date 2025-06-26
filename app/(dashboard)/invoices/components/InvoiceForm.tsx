@@ -230,7 +230,7 @@ const InvoiceForm = ({ onClose }: { onClose?: () => void }) => {
           
             onClose?.();
             router.push("/invoices");
-          };
+          });
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-card p-6 rounded shadow max-w-4xl mx-auto">
       <h2 className="text-2xl font-bold mb-4 text-foreground">Create Invoice</h2>
