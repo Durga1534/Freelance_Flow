@@ -314,16 +314,16 @@ export default function DashboardLayout({ children }) {
                             className="cursor-pointer p-3 hover:bg-muted transition-colors"
                           >
                             <div className="text-sm font-medium text-foreground">
-                              {item.name || item.title || item.subject || "Untitled"}
+                              {item.invoice_number || item.name || item.task || "Untitled"}
                             </div>
-                            <div className="text-xs text-muted-foreground">
-                              {item._collection === 'clients' && 'Client'}
-                              {item._collection === 'projects' && 'Project'}
-                              {item._collection === 'invoices' && 'Invoice'}
-                              {item._collection === 'timeEntries' && 'Time Entry'}
-                              {item.email && ` • ${item.email}`}
-                              {item.status && ` • ${item.status}`}
-                            </div>
+
+                            <div className="text-sm font-medium text-foreground">
+                                {item._collection === 'invoices' && item.invoice_number}
+                                {item._collection === 'clients' && item.name}
+                                {item._collection === 'projects' && item.name}
+                                {item._collection === 'timeEntries' && item.task}
+                                {!item.name && !item.invoice_number && !item.task && "Untitled"}
+                              </div>
                           </li>
                         ))}
                       </ul>
