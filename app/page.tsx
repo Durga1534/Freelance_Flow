@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-/* ---------- Feature data ---------- */
 const FEATURES = [
   {
     name: "Client CRM",
