@@ -16,6 +16,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Freelance Flow",
   description: "Manage your freelance business with ease",
+  icons: {
+    icon: "/favicon.ico",     
+    shortcut: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
