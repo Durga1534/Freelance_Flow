@@ -169,7 +169,7 @@ FreelanceFlow provides a comprehensive REST API for integration with external to
 
 FreelanceFlow was built to address common pain points in freelance business management:
 - Streamline client communication and project tracking
-- Automate invoice generation and payment monitoring  
+- Automate invoice generation and payment monitoring  *(coming soon)*
 - Provide clear visibility into business performance
 - Reduce time spent on administrative tasks
 - Create a professional client experience
