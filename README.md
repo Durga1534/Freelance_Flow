@@ -6,7 +6,6 @@ FreelanceFlow is a comprehensive SaaS solution designed to streamline client man
 
 [![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen)](https://freelance-flow-xi.vercel.app/)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/Durga1534/Freelance_Flow)
-[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 ## 📸 Screenshots
 
