@@ -15,12 +15,20 @@ FreelanceFlow is a comprehensive SaaS solution designed to streamline client man
 *Clean, intuitive dashboard providing real-time business insights*
 
 ### Client Management
-![Client Management](https://via.placeholder.com/800x450/059669/FFFFFF?text=Client+Management+Interface)
+![Client Management](public/clients.png)
 *Comprehensive client profiles with project history and communication logs*
 
-### Invoice Generation
-![Invoice System](https://via.placeholder.com/800x450/DC2626/FFFFFF?text=Professional+Invoice+System)
+### Project Management
+![Project Management](public/projects.png)
+*Clean, user-friendly project management with details of project
+
+### Invoice Generation with stripe integration
+![Invoice System](public/invoices.png)
 *Professional invoice generation with automated payment tracking*
+
+### Time Tracking
+![Time Tracking](public/time-tracking.png)
+*Live time tracking with feature implementation of the selected project
 
 ## ✨ Key Features
 
@@ -28,33 +36,30 @@ FreelanceFlow is a comprehensive SaaS solution designed to streamline client man
 - Real-time revenue analytics and performance metrics
 - Visual project timeline and milestone tracking
 - Monthly/quarterly business insights and trends
-- Customizable KPI widgets
+- Quick Actions panel for one-click client, project, or invoice
 
 ### 👥 **Advanced Client Management**
 - Complete client profiles with contact history
 - Project portfolio tracking per client
-- Communication timeline and notes
-- Client satisfaction scoring system
+- Communication timeline and notes 
 
 ### 💰 **Financial Management**
-- Professional invoice generation with custom branding
-- Automated payment tracking and reminders
-- Expense categorization and tax reporting
+- Professional invoice generation with stripe integration
+- Automated payment tracking and reminders *(coming soon)*
 - Revenue forecasting and budget planning
 
 ### ⏱️ **Time & Project Tracking**
 - Detailed time logging with project categorization
 - Milestone-based project management
 - Automated progress reporting
-- Team collaboration tools (multi-user support)
+- Team collaboration tools (multi-user support) *(coming soon)*
 
 ### 📈 **Business Intelligence**
 - Revenue analytics with trend visualization
 - Client profitability analysis
 - Project performance metrics
-- Exportable business reports
 
-### 🔔 **Smart Notifications**
+### 🔔 **Smart Notifications**  *(coming soon)*
 - Payment due reminders
 - Project deadline alerts
 - Client communication follow-ups
@@ -66,9 +71,8 @@ FreelanceFlow is a comprehensive SaaS solution designed to streamline client man
 - **Next.js 15** - React framework with App Router
 - **TypeScript** - Type-safe development
 - **Tailwind CSS** - Utility-first styling
-- **Radix UI** - Accessible component primitives
+- **Shadcn** - an accessible, headless React component set built on Tailwind CSS
 - **React Hook Form** - Performant form management
-- **Zustand** - Lightweight state management
 
 ### **Backend & Database**
 - **Appwrite** - Backend-as-a-Service platform
@@ -82,7 +86,6 @@ FreelanceFlow is a comprehensive SaaS solution designed to streamline client man
 
 ### **Development & Testing**
 - **Jest** - Unit testing framework
-- **Testing Library** - Component testing
 - **ESLint** - Code quality and consistency
 - **Puppeteer** - End-to-end testing
 
@@ -137,13 +140,6 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 # Deploy to Vercel
 npm run build
 vercel --prod
-```
-
-### Docker
-```dockerfile
-# Build production image
-docker build -t freelanceflow .
-docker run -p 3000:3000 freelanceflow
 ```
 
 ## 🧪 Testing
