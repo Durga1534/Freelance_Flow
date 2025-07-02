@@ -8,6 +8,7 @@ import { z } from "zod";
 import { account, databases, ID } from "@/lib/appwrite";
 import { format } from "date-fns";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { randomUUID } from "crypto";
 
 // Zod validation schema
 const invoiceSchema = z.object({
@@ -76,7 +77,7 @@ const InvoiceForm = ({ onClose }: { onClose?: () => void }) => {
     watch,
     reset,
   } = useForm<InvoiceFormData>({
-    resolver: zodResolver(invoiceSchema),
+    resolver: zodResolver(invoiceSchema) as any,
     defaultValues: {
       invoice_number: `INV-${Date.now()}`,
       invoice_date: format(new Date(), "yyyy-MM-dd"),
@@ -106,9 +107,15 @@ const InvoiceForm = ({ onClose }: { onClose?: () => void }) => {
 
   let newSubtotal = 0;
   const newItems = items.map((item) => {
-    const amount = (item.quantity || 0) * (item.rate || 0);
+    const amount = (item.quantity ?? 0) * (item.rate ?? 0);
     newSubtotal += amount;
-    return { ...item, amount };
+    return { ...item, 
+      id: item.id ?? crypto.randomUUID(), 
+      description: item.description ?? '', 
+      quantity: item.quantity ?? 0, 
+      rate: item.rate ?? 0, 
+      amount 
+    };
   });
 
   const discountAmount = discount_type === "percentage"
@@ -126,7 +133,6 @@ const InvoiceForm = ({ onClose }: { onClose?: () => void }) => {
   if (taxAmount !== watchedValues.tax_amount) valuesToSet.tax_amount = taxAmount;
   if (totalAmount !== watchedValues.total_amount) valuesToSet.total_amount = totalAmount;
 
-  // Update items if amounts changed
   if (JSON.stringify(newItems) !== JSON.stringify(items)) {
     valuesToSet.items = newItems;
   }
@@ -142,7 +148,7 @@ const InvoiceForm = ({ onClose }: { onClose?: () => void }) => {
     const fetchClients = async () => {
       try {
         const response = await databases.listDocuments(databaseId, clientsId);
-        setClients(response.documents as Client[]);
+        setClients(response.documents as unknown as Client[]);
       } catch (error) {
         console.error("Failed to fetch clients:", error);
       }

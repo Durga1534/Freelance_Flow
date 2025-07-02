@@ -1,12 +1,14 @@
 import type { JestConfigWithTsJest } from 'ts-jest'
 
 const config: JestConfigWithTsJest = {
-  preset: 'ts-jest/presets/js-with-ts',
+  preset: 'ts-jest',
   testEnvironment: 'jsdom',
 
   globals: {
     'ts-jest': {
-      tsconfig: 'tsconfig.jest.json'
+      tsconfig: 'tsconfig.jest.json',
+      isolatedModules: true,
+      diagnostics:      false
     }
   },
 
