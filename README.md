@@ -95,6 +95,10 @@ A full-stack web application built to demonstrate modern web development skills 
 - Appwrite account and project
 - Stripe account for payments
 
+## 📘 Docs
+- [🔐 Auth Flow](docs/auth-flow.md)
+
+
 ### Installation
 
 ```bash
