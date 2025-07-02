@@ -140,6 +140,7 @@ app/
 
 * [x] Tested email + password login manually
 * [x] Google login flow works end-to-end
-* [x] Secrets not committed (used `.env.local`)
-* [x] Still need to test what happens when same email tries to register again
+* [x] Secrets not committed (used `.env`)
+* []  Still need to test what happens when same email tries to register again
+
 
