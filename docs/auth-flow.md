@@ -1,6 +1,6 @@
 # 🔐 Authentication Flow (How I Built It)
 
-This doc explains how user authentication works in **FreelanceFlow**, my full-stack freelance manager. I used **Appwrite** for auth and **Next.js App Router** for routing. The main goal was to protect all dashboard routes unless the user is logged in.
+This doc explains how user authentication works in **FreelanceFlow** the SaaS I built to manage freelance projects, I used **Appwrite** for auth and **Next.js App Router** for routing. All dashboard routes are server‑protected.
 
 ```
 / (public) ─► /login  ─► ✅ if session → /dashboard  
@@ -100,6 +100,17 @@ redirect('/login')
 
 ---
 
+## 🌐 Why I chose Appwrite
+
+| Need                        | Why Appwrite solved it                           |
+|-----------------------------|--------------------------------------------------|
+| Email & social logins       | SDK has email/password + OAuth in one package   |
+| JWT sessions                | Server‑side validation without custom middleware |
+| Free tier for MVP           | 100 K reqs/month – enough for launch            |
+| Self‑host option            | Future flexibility if I outgrow the cloud plan  |
+
+---
+
 ## 🔒 Security Details
 
 | Security Feature     | What I Did                                          |
@@ -142,5 +153,4 @@ app/
 * [x] Google login flow works end-to-end
 * [x] Secrets not committed (used `.env`)
 * [ ] Still need to test what happens when same email tries to register again
-
 
