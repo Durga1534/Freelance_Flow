@@ -153,4 +153,7 @@ app/
 * [x] Google login flow works end-to-end
 * [x] Secrets not committed (used `.env`)
 * [ ] Still need to test what happens when same email tries to register again
+<<<<<<< HEAD
 
+=======
+>>>>>>> 526fa3d (documented clients.md file)
