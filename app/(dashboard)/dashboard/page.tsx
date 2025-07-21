@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Users,
   FolderOpen,
@@ -76,8 +77,8 @@ export default function DashboardPage() {
   const [monthlyData, setMonthlyData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   const [chartColors, setChartColors] = useState<string[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
     const COLORS = [
@@ -590,14 +591,20 @@ export default function DashboardPage() {
       <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <button className="flex items-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors duration-200">
+          <button 
+            className="flex items-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors duration-200"
+            onClick={() => router.push("/clients/new")}
+          >
             <Users className="h-8 w-8 text-blue-600 mr-3" />
             <div className="text-left">
               <p className="font-medium text-blue-900">Add Client</p>
               <p className="text-sm text-blue-600">Create new client</p>
             </div>
           </button>
-          <button className="flex items-center p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors duration-200">
+          <button 
+            className="flex items-center p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors duration-200"
+            onClick={() => router.push("/projects/new")}
+            >
             <FolderOpen className="h-8 w-8 text-green-600 mr-3" />
             <div className="text-left">
               <p className="font-medium text-green-900">New Project</p>

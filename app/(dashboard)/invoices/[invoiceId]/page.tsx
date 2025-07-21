@@ -1,4 +1,5 @@
 "use client";
+import ReactDOMServer from "react-dom/server";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { databases } from "@/lib/appwrite";
@@ -6,7 +7,46 @@ import { databases } from "@/lib/appwrite";
 const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
 const collectionId = process.env.NEXT_PUBLIC_COLLECTION_INVOICES_ID!;
 
+//PDF download function
+async function downloadPDF(html: string) {
+  const response = await fetch("/api/pdf/generate", {
+    method: "POST",
+    headers: {"Content-Type" : "application/js"},
+    body: JSON.stringify({ html }),
+  });
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "invoice.pdf";
+  a.click();
+  window.URL.revokeObjectURL(url);
+}
 
+//Printable invoice component for PDF
+function PrintableInvoice({ invoice } : {invoice: any}) {
+  return (
+    <div style={{ fontFamily: "sans-serif", padding: 24 }}>
+      <h1 style={{ color: "#2563eb" }}>Invoice #{invoice.invoice_number}</h1>
+      <div>Status: {invoice.status}</div>
+      <div>Currency: {invoice.currency}</div>
+      <div>Invoice Date: {invoice.invoice_date}</div>
+      <div>Due Date: {invoice.due_date}</div>
+      <h2>Client Info</h2>
+      <div>Email: {invoice.client_email}</div>
+      <div>Company: {invoice.client_company}</div>
+      <h2>Business Info</h2>
+      <div>Name: {invoice.business_name}</div>
+      <div>Email: {invoice.business_email}</div>
+      <h2>Amount Summary</h2>
+      <div>Subtotal: {invoice.subtotal}</div>
+      <div>Tax ({invoice.tax_rate}%): {invoice.tax_amount}</div>
+      <div>Discount ({invoice.discount_type}): -{invoice.discount_value}</div>
+      <div>Total: {invoice.total_amount}</div>
+      <div>Paid: {invoice.paid_amount}</div>
+    </div>
+  )
+}
 
 const InvoiceDetails = () => {
     const {invoiceId} = useParams();
@@ -58,6 +98,20 @@ if (!invoice) return <div className="p-8 text-destructive">Invoice not found.</d
   return (
       <div className="max-w-3xl mx-auto bg-card p-6 rounded-lg shadow mt-10 space-y-6">
         <h1 className="text-2xl font-bold text-primary">Invoice #{invoice.invoice_number}</h1>
+
+        {/*Download PDF Button */}
+        <button
+          className="mb-4 px-4 py-2 bg-purple-400 text-white rounded hover:bg-purple-500"
+          onClick={() => {
+            const html = ReactDOMServer.renderToStaticMarkup(
+              <PrintableInvoice invoice={invoice} />
+            );
+            downloadPDF(html);
+          }}
+        
+        >
+          Download PDF
+        </button>
 
         {/* Status + Dates */}
         <div className="grid grid-cols-2 gap-4 bg-muted p-4 rounded">

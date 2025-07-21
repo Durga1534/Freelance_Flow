@@ -8,7 +8,6 @@ import { z } from "zod";
 import { account, databases, ID } from "@/lib/appwrite";
 import { format } from "date-fns";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { randomUUID } from "crypto";
 
 // Zod validation schema
 const invoiceSchema = z.object({
@@ -230,7 +229,9 @@ const InvoiceForm = ({ onClose }: { onClose?: () => void }) => {
 });
 
   const onSubmit = async (data: InvoiceFormData) => {
-  createInvoiceMutation.mutate(data);
+    //prevents from creating duplicates
+    if(createInvoiceMutation.isPending) return;
+    createInvoiceMutation.mutate(data);
 };
 
   return (
