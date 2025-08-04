@@ -149,9 +149,9 @@ export default function TimeTrackingPage() {
   const projectMap = Object.fromEntries(projects.map((p) => [p.$id, p.name]));
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Time Tracking</h1>
+    <div className="container mx-auto p-4">
+      <div className="flex flex-wrap justify-center mb-4">
+        <h1 className="text-3xl font-bold mb-2">Time Tracking</h1>
         {isRunning && (
           <p className="text-green-600 font-semibold">
             Tracking: {projectMap[form.projectId] || "Unnamed Project"} —

@@ -17,7 +17,7 @@ interface StripeButtonProps {
     transaction_id?: string;
 }
 
-const StripeButton: React.FC<StripeButtonProps> = ({
+function StripeButton({
     invoiceId,
     amount,
     email,
@@ -25,7 +25,7 @@ const StripeButton: React.FC<StripeButtonProps> = ({
     payment_method,
     status = "pending",
     transaction_id
-}) => {
+}: StripeButtonProps) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -158,6 +158,6 @@ const StripeButton: React.FC<StripeButtonProps> = ({
             )}
         </div>
     );
-};
+}
 
 export default StripeButton;

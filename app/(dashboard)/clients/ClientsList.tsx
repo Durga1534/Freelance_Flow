@@ -16,6 +16,7 @@ type Client = {
   phone: string;
   company: string;
   notes: string;
+  userId: string;
 };
 
 const ClientsList = () => {
@@ -24,16 +25,29 @@ const ClientsList = () => {
   const [editId, setEditId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Client>>({});
   const [saving, setSaving] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null); // Fixed: Added missing state
+  const [error, setError] = useState<string | null>(null); // Added: Error state
 
   const fetchClients = async () => {
     setLoading(true);
+    setError(null);
     try {
       const user = await account.get();
+      setCurrentUser(user);
 
-      const res = await databases.listDocuments(databaseId, collectionId, [Query.equal("userId", user.$id)]);
+      // Handle userId length issue similar to ClientForm
+      let userId = String(user.$id);
+      if (userId.length > 20) {
+        userId = btoa(userId).substring(0, 20).replace(/[+/=]/g, '');
+      }
+
+      const res = await databases.listDocuments(databaseId, collectionId, [
+        Query.equal("userId", userId)
+      ]);
       setClients(res.documents as Client[]);
     } catch (err) {
       console.error("Failed to fetch clients", err);
+      setError("Failed to load clients. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -86,9 +100,27 @@ const ClientsList = () => {
       await databases.deleteDocument(databaseId, collectionId, clientId);
       setClients(clients.filter((c) => c.$id !== clientId));
     } catch (err) {
+      console.error("Failed to delete client:", err);
       alert("Failed to delete client.");
     }
   };
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="mt-8 p-6 bg-red-50 rounded-xl border border-red-200">
+        <h2 className="text-xl font-semibold text-red-900 mb-2">Error</h2>
+        <p className="text-red-700">{error}</p>
+        <Button 
+          onClick={fetchClients} 
+          className="mt-4"
+          variant="outline"
+        >
+          Try Again
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-8 p-6 bg-white rounded-xl border shadow-sm">
@@ -99,6 +131,13 @@ const ClientsList = () => {
 
       {loading ? (
         <p className="text-muted-foreground">Loading clients...</p>
+      ) : clients.length === 0 ? (
+        <div className="text-center py-8">
+          <p className="text-muted-foreground">No clients found.</p>
+          <p className="text-sm text-muted-foreground mt-2">
+            Add your first client using the form above.
+          </p>
+        </div>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-muted bg-background">
           <table className="w-full text-sm text-left">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { account, databases, ID } from "@/lib/appwrite";
 
 const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
@@ -18,7 +18,8 @@ type ClientFormProps = {
   onClientAdded: () => void;
 };
 
-const ClientForm: React.FC<ClientFormProps> = ({ onClientAdded }) => {
+// Better TypeScript approach - no React.FC
+function ClientForm({ onClientAdded }: ClientFormProps) {
   const [form, setForm] = useState<ClientFields>({
     name: "",
     email: "",
@@ -28,6 +29,21 @@ const ClientForm: React.FC<ClientFormProps> = ({ onClientAdded }) => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        const user = await account.get();
+        setCurrentUser(user);
+      } catch (err) {
+        console.error("No user session found:", err);
+        setError("Please log in to add clients.");
+      }
+    };
+    
+    checkUser();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -43,12 +59,39 @@ const ClientForm: React.FC<ClientFormProps> = ({ onClientAdded }) => {
     setError(null);
 
     try {
-      const user = await account.get(); 
+      const user = await account.get();
+      
+      if (!user || !user.$id) {
+        throw new Error("User session not found. Please log in again.");
+      }
 
-      await databases.createDocument(databaseId, collectionId, ID.unique(), {
-          ...form, 
-          userId: user.$id
-      });
+      // Convert user ID to string and ensure it's not too long
+      let userId = String(user.$id);
+      
+      // If userId is longer than 20 chars, create a hash or use a different approach
+      if (userId.length > 20) {
+        // Option 2: Create a hash (better approach)
+        userId = btoa(userId).substring(0, 20).replace(/[+/=]/g, '');
+        console.log("Original userId too long, using hashed version:", userId);
+      }
+
+      console.log("Final userId to be stored:", userId, "Length:", userId.length);
+
+      const documentData = {
+        ...form,
+        userId: userId
+      };
+
+      const result = await databases.createDocument(
+        databaseId, 
+        collectionId, 
+        ID.unique(), 
+        documentData
+      );
+
+      console.log("Document created successfully:", result);
+
+      // Reset form
       setForm({
         name: "",
         email: "",
@@ -56,14 +99,37 @@ const ClientForm: React.FC<ClientFormProps> = ({ onClientAdded }) => {
         company: "",
         notes: ""
       });
+      
       onClientAdded();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error adding client:", err);
-      setError("Failed to add client. Please try again.");
+      
+      let errorMessage = "Failed to add client. Please try again.";
+      
+      if (err.code === 401) {
+        errorMessage = "Authentication failed. Please log in again.";
+      } else if (err.code === 400) {
+        errorMessage = "Invalid data format. Please check all fields.";
+      } else if (err.message?.includes("Invalid document structure")) {
+        errorMessage = "Data validation failed. Please contact support.";
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
+
+  if (!currentUser) {
+    return (
+      <div className="space-y-4 bg-card text-card-foreground p-6 rounded shadow-md">
+        <h2 className="text-xl font-semibold">Add New Client</h2>
+        <p className="text-destructive">Please log in to add clients.</p>
+      </div>
+    );
+  }
 
   return (
     <form
@@ -100,6 +166,6 @@ const ClientForm: React.FC<ClientFormProps> = ({ onClientAdded }) => {
       </button>
     </form>
   );
-};
+}
 
 export default ClientForm;

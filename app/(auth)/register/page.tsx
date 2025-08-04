@@ -78,12 +78,15 @@ function RegisterPage() {
       const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
       
       await account.create(userId, email, password)
+
+      //Create a session immediately after account creation
+      await account.createEmailPasswordSession(email, password)
       
       setSuccess("Account created successfully! Redirecting to login...")
       
       // Redirect after a short delay to show success message
       setTimeout(() => {
-        router.push("/login")
+        router.push("/dashboard")
       }, 2000)
     } catch (err: any) {
       console.error("Registration error:", err)
@@ -158,7 +161,7 @@ function RegisterPage() {
               </Alert>
             )}
 
-            {/* Google Sign-up Button - Moved to top */}
+            {/* Google Sign-up Button */}
             <Button
               onClick={handleGoogleSignUp}
               disabled={isLoading}
