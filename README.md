@@ -6,7 +6,8 @@ A full-stack web application built to demonstrate modern web development skills 
 
 [![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen)](https://freelance-flow-xi.vercel.app/)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/Durga1534/Freelance_Flow)
-![CodeQL](https://github.com/Durga1534/Freelance_Flow/blob/master/.github/workflows/codeql.yml/badge.svg)
+![CodeQL](https://github.com/Durga1534/Freelance_Flow/actions/workflows/codeql.yml/badge.svg)
+
 
 
 ## 📸 Screenshots
