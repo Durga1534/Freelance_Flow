@@ -190,7 +190,7 @@ This project was built to:
 ## 👨‍💻 Author
 
 **Durga Prasad Konduru**
-- Portfolio: [Coming Soon]
+- Portfolio: [Durga Prasad] (https://durga-prasad-portfolio1.vercel.app/)
 - LinkedIn: [@durgaprasad23](https://www.linkedin.com/in/durgaprasad23)
 - Email: kondurudurgaprasad.2@gmail.com
 
