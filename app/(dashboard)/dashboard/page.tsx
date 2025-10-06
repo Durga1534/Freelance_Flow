@@ -611,7 +611,10 @@ export default function DashboardPage() {
               <p className="text-sm text-green-600">Start new project</p>
             </div>
           </button>
-          <button className="flex items-center p-4 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors duration-200">
+          <button 
+            className="flex items-center p-4 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors duration-200"
+            onClick={() => router.push("/invoices/new")}
+          >
             <FileText className="h-8 w-8 text-orange-600 mr-3" />
             <div className="text-left">
               <p className="font-medium text-orange-900">Create Invoice</p>
