@@ -1,4 +1,3 @@
-/* __tests__/invoice‑form.test.tsx */
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import InvoiceForm from '@/app/(dashboard)/invoices/components/InvoiceForm'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'

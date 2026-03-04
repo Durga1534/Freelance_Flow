@@ -38,34 +38,31 @@ function LoginPage() {
     try {
       try {
         await account.deleteSession('current')
-      } catch (err) {
-        console.log("No existing session to delete")
+      } catch {
+        // No existing session — safe to ignore
       }
 
       const session = await account.createEmailPasswordSession(email, password)
-      
-      if (session) {
-        console.log("Login successful:", session)
 
+      if (session) {
         setTimeout(() => {
           router.push("/dashboard")
         }, 100)
       }
-    } catch (err: any) {
-      console.error("Login error:", err)
-      
+    } catch (err: unknown) {
+      const error = err as { code?: number; message?: string }
       let errorMessage = "Login failed. Please try again."
-      
-      if (err.code === 401) {
+
+      if (error.code === 401) {
         errorMessage = "Invalid email or password."
-      } else if (err.code === 429) {
+      } else if (error.code === 429) {
         errorMessage = "Too many login attempts. Please try again later."
-      } else if (err.code === 400) {
+      } else if (error.code === 400) {
         errorMessage = "Invalid email format."
-      } else if (err.message) {
-        errorMessage = err.message
+      } else if (error.message) {
+        errorMessage = error.message
       }
-      
+
       setError(errorMessage)
     } finally {
       setIsLoading(false)
@@ -75,24 +72,21 @@ function LoginPage() {
   const handleGoogleLogin = async () => {
     setIsLoading(true)
     setError("")
-    
+
     try {
-      
       try {
         await account.deleteSession('current')
-      } catch (err) {
-        
-        console.log("No existing session to delete")
+      } catch {
+        // No existing session — safe to ignore
       }
 
-      
       await account.createOAuth2Session(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         "google" as any,
         `${window.location.origin}/dashboard`,
         `${window.location.origin}/login`
       )
-    } catch (err: any) {
-      console.error("Google login error:", err)
+    } catch {
       setError("Google login failed. Please try again.")
       setIsLoading(false)
     }
@@ -128,7 +122,7 @@ function LoginPage() {
               </Alert>
             )}
 
-             <Button
+            <Button
               onClick={handleGoogleLogin}
               disabled={isLoading}
               variant="outline"

@@ -1,17 +1,17 @@
 "use client"
 
 import { useState } from "react"
-import { account ,databases, ID } from "@/lib/appwrite"
+import { account, databases, ID } from "@/lib/appwrite"
 
 const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
 const collectionId = process.env.NEXT_PUBLIC_COLLECTION_PROJECTS_ID!;
 
-const ProjectsForm = ({onProjectAdded, isOpen, onClose} : {
+const ProjectsForm = ({ onProjectAdded, isOpen, onClose }: {
   onProjectAdded: () => void,
   isOpen: boolean,
   onClose: () => void
 }) => {
-    const [form, setForm] = useState({
+  const [form, setForm] = useState({
     name: "",
     client: "",
     status: "Planning",
@@ -22,58 +22,58 @@ const ProjectsForm = ({onProjectAdded, isOpen, onClose} : {
     description: "",
     tags: ""
   });
-const [loading, setLoading] = useState(false);
-const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setForm({...form, [e.target.name] : e.target.value});
-};
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
-const handleSubmit = async(e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-    
+
     try {
       const user = await account.get();
-        const documentData = {
-            ...form,
-            budget: form.budget ? Number(form.budget) : null,
-            tags: form.tags ? form.tags.split(",").map((t) => t.trim()) : [],
-            userId: user.$id,
-        };
-        
-        console.log("Sending data:", documentData); 
-        
-        await databases.createDocument(
-            databaseId,
-            collectionId,
-            ID.unique(),
-            documentData
-        );
-        
-        setForm({
-            name: "",
-            client: "",
-            status: "Planning",
-            priority: "medium",
-            budget: "",
-            startDate: "",
-            deadline: "",
-            description: "",
-            tags: ""
-        });
-        onProjectAdded();
-        onClose();
-    } catch(err: any) {
-        console.error("Error creating document:", err); // Better error logging
-        setError(err.message || "Failed to add project");
-    } finally {
-        setLoading(false);
-    }
-}
+      const documentData = {
+        ...form,
+        budget: form.budget ? Number(form.budget) : null,
+        tags: form.tags ? form.tags.split(",").map((t) => t.trim()) : [],
+        userId: user.$id,
+      };
 
-if (!isOpen) return null;
+
+
+      await databases.createDocument(
+        databaseId,
+        collectionId,
+        ID.unique(),
+        documentData
+      );
+
+      setForm({
+        name: "",
+        client: "",
+        status: "Planning",
+        priority: "medium",
+        budget: "",
+        startDate: "",
+        deadline: "",
+        description: "",
+        tags: ""
+      });
+      onProjectAdded();
+      onClose();
+    } catch (err: unknown) {
+      const error = err as { message?: string }
+      setError(error.message || "Failed to add project");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -87,7 +87,7 @@ if (!isOpen) return null;
             ×
           </button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -100,9 +100,9 @@ if (!isOpen) return null;
                 onChange={handleChange}
                 required
                 className="w-full px-2 py-1.5 text-sm border border-border rounded bg-input text-foreground focus:ring-2 focus:ring-ring focus:border-transparent"
-              />  
+              />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-foreground mb-1">
                 Client
@@ -134,7 +134,7 @@ if (!isOpen) return null;
                 <option value="Pending">Pending</option>
               </select>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-foreground mb-1">
                 Priority
@@ -165,7 +165,7 @@ if (!isOpen) return null;
                 className="w-full px-2 py-1.5 text-sm border border-border rounded bg-input text-foreground focus:ring-2 focus:ring-ring focus:border-transparent"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-foreground mb-1">
                 Tags
@@ -193,7 +193,7 @@ if (!isOpen) return null;
                 className="w-full px-2 py-1.5 text-sm border border-border rounded bg-input text-foreground focus:ring-2 focus:ring-ring focus:border-transparent"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-foreground mb-1">
                 Deadline
@@ -222,7 +222,7 @@ if (!isOpen) return null;
           </div>
 
           {error && <p className="text-destructive text-sm">{error}</p>}
-          
+
           <div className="flex gap-2 pt-2">
             <button
               type="button"

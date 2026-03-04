@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
@@ -27,6 +28,20 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { globalSearch } from "@/lib/globalSearch";
 
+interface AppwriteUser {
+  $id: string;
+  name: string;
+  email: string;
+}
+
+interface SearchResult {
+  $id: string;
+  _collection: "clients" | "projects" | "invoices" | "timeEntries";
+  name?: string;
+  invoice_number?: string;
+  task?: string;
+}
+
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Clients", href: "/clients", icon: Users },
@@ -36,21 +51,21 @@ const navigation = [
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 
-function classNames(...classes) {
+function classNames(...classes: (string | boolean | undefined)[]) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function DashboardLayout({ children }) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [user, setUser] = useState(null);
-  const [profileImageUrl, setProfileImageUrl] = useState(null);
+  const [user, setUser] = useState<AppwriteUser | null>(null);
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [results, setResults] = useState([]);
+  const [results, setResults] = useState<SearchResult[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const pathName = usePathname();
   const router = useRouter();
-  const debounceTimeout = useRef(null);
+  const debounceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Search effect with debouncing
   useEffect(() => {
@@ -61,7 +76,6 @@ export default function DashboardLayout({ children }) {
 
     setSearchLoading(true);
 
-    // Clear previous timeout
     if (debounceTimeout.current) {
       clearTimeout(debounceTimeout.current);
     }
@@ -70,11 +84,9 @@ export default function DashboardLayout({ children }) {
       try {
         const session = await account.get();
         const userId = session?.$id;
-
         const data = await globalSearch(search, userId);
         setResults(data);
-      } catch (error) {
-        console.error("Search error:", error);
+      } catch {
         setResults([]);
       } finally {
         setSearchLoading(false);
@@ -88,53 +100,43 @@ export default function DashboardLayout({ children }) {
     };
   }, [search]);
 
- useEffect(() => {
-  let timeoutId;
+  useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>;
 
-  const resetTimer = () => {
-    if (timeoutId) clearTimeout(timeoutId);
+    const resetTimer = () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = setTimeout(async () => {
+        try {
+          await account.deleteSession("current");
+          router.push("/login");
+        } catch {
+          // Silently fail — user may already be logged out
+        }
+      }, 30 * 60 * 1000);
+    };
 
-    timeoutId = setTimeout(async () => {
+    const activityEvents = ["mousemove", "mousedown", "keydown", "touchstart", "scroll"];
+
+    const startIdleDetection = async () => {
       try {
-        await account.deleteSession("current");
-        router.push("/login");
-      } catch (err) {
-        console.error("Auto-logout failed:", err);
+        const sessionUser = await account.get();
+        setUser(sessionUser as AppwriteUser);
+        await fetchUserProfileData(sessionUser.$id);
+        setLoading(false);
+        resetTimer();
+        activityEvents.forEach((event) => window.addEventListener(event, resetTimer));
+      } catch {
+        router.replace("/login");
       }
-    }, 30 * 60 * 1000);
-  };
+    };
 
-  const activityEvents = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'];
+    startIdleDetection();
 
-  const startIdleDetection = async () => {
-    try {
-      const sessionUser = await account.get();
-      setUser(sessionUser);
-
-      await fetchUserProfileData(sessionUser.$id);
-      setLoading(false);
-
-      resetTimer();
-
-      activityEvents.forEach((event) =>
-        window.addEventListener(event, resetTimer)
-      );
-    } catch (err) {
-      console.error("Session check failed:", err);
-      router.replace("/login");
-    }
-  };
-
-  startIdleDetection();
-
-  return () => {
-    if (timeoutId) clearTimeout(timeoutId);
-    activityEvents.forEach((event) =>
-      window.removeEventListener(event, resetTimer)
-    );
-  };
-}, [router]);
-
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      activityEvents.forEach((event) => window.removeEventListener(event, resetTimer));
+    };
+  }, [router]);
 
   useEffect(() => {
     const handleStorageChange = () => {
@@ -143,30 +145,24 @@ export default function DashboardLayout({ children }) {
       }
     };
 
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('profile-updated', handleStorageChange);
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("profile-updated", handleStorageChange);
 
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('profile-updated', handleStorageChange);
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("profile-updated", handleStorageChange);
     };
   }, [user]);
 
-  const fetchUserProfileData = async (userId) => {
+  const fetchUserProfileData = async (userId: string) => {
     try {
       const profile = await fetchUserProfile(userId);
-      
-      console.log("Fetched profile:", profile);
-      
       if (profile && profile.profileImageUrl) {
         setProfileImageUrl(profile.profileImageUrl);
-        console.log("Profile image URL set:", profile.profileImageUrl);
       } else {
-        console.log("No profile image URL found in profile data");
         setProfileImageUrl(null);
       }
-    } catch (err) {
-      console.error("Failed to fetch profile:", err);
+    } catch {
       setProfileImageUrl(null);
     }
   };
@@ -175,32 +171,37 @@ export default function DashboardLayout({ children }) {
     try {
       await account.deleteSession("current");
       router.push("/login");
-    } catch (err) {
-      console.error("Logout failed", err);
+    } catch {
+      // navigate anyway on failure
+      router.push("/login");
     }
   };
 
-  const handleSearchResultClick = (item) => {
-    console.log("Clicked:", item);
+  const handleSearchResultClick = (item: SearchResult) => {
     setSearch("");
     setResults([]);
-    
-    // Navigate to the appropriate page based on item type
-    if (item._collection === 'clients') {
+
+    if (item._collection === "clients") {
       router.push(`/clients/${item.$id}`);
-    } else if (item._collection === 'projects') {
+    } else if (item._collection === "projects") {
       router.push(`/projects/${item.$id}`);
-    } else if (item._collection === 'invoices') {
+    } else if (item._collection === "invoices") {
       router.push(`/invoices/${item.$id}`);
-    } else if (item._collection === 'timeEntries') {
+    } else if (item._collection === "timeEntries") {
       router.push(`/time-tracking`);
     }
+  };
+
+  const getResultLabel = (item: SearchResult): string => {
+    if (item._collection === "invoices") return item.invoice_number ?? "Untitled";
+    if (item._collection === "timeEntries") return item.task ?? "Untitled";
+    return item.name ?? "Untitled";
   };
 
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
   }
@@ -296,7 +297,7 @@ export default function DashboardLayout({ children }) {
             <Menu className="h-6 w-6" />
           </button>
           <div className="h-6 w-px bg-border lg:hidden" />
-          
+
           <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
             <div className="relative flex flex-1 items-center">
               <div className="relative w-full max-w-lg">
@@ -304,19 +305,19 @@ export default function DashboardLayout({ children }) {
                   <Search className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <input
-                  className="block w-full rounded-md border border-input bg-background py-2 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring sm:text-sm"
+                  className="block w-full rounded-md border border-input bg-background py-2 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring"
                   placeholder="Search clients, projects, invoices..."
                   type="search"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
-                
+
                 {/* Search Results Dropdown */}
                 {search.length > 0 && (
-                  <div className="absolute top-full left-0 z-50 mt-2 w-full rounded-md border bg-popover shadow-md">
+                  <div className="absolute top-full left-0 z-50 mt-2 w-full rounded-md border border-border bg-popover shadow-md">
                     {searchLoading ? (
                       <div className="flex items-center justify-center p-4">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
                         <span className="ml-2 text-sm text-muted-foreground">Searching...</span>
                       </div>
                     ) : results.length > 0 ? (
@@ -327,23 +328,18 @@ export default function DashboardLayout({ children }) {
                             onClick={() => handleSearchResultClick(item)}
                             className="cursor-pointer p-3 hover:bg-muted transition-colors"
                           >
-                            <div className="text-sm font-medium text-foreground">
-                              {item.invoice_number || item.name || item.task || "Untitled"}
+                            <div className="text-xs text-muted-foreground capitalize mb-0.5">
+                              {item._collection}
                             </div>
-
-                            <div className="text-sm font-medium text-foreground">
-                                {item._collection === 'invoices' && item.invoice_number}
-                                {item._collection === 'clients' && item.name}
-                                {item._collection === 'projects' && item.name}
-                                {item._collection === 'timeEntries' && item.task}
-                                {!item.name && !item.invoice_number && !item.task && "Untitled"}
-                              </div>
+                            <div className="text-sm font-medium text-popover-foreground">
+                              {getResultLabel(item)}
+                            </div>
                           </li>
                         ))}
                       </ul>
                     ) : (
                       <div className="p-4 text-center text-sm text-muted-foreground">
-                        No results found for "{search}"
+                        No results found for &quot;{search}&quot;
                       </div>
                     )}
                   </div>
@@ -366,15 +362,13 @@ export default function DashboardLayout({ children }) {
                 <DropdownMenuTrigger className="focus:outline-none">
                   <div className="flex items-center gap-3 rounded-full p-1.5 hover:bg-muted">
                     {profileImageUrl ? (
-                      <img
+                      <Image
                         src={profileImageUrl}
                         alt="Profile"
-                        className="h-8 w-8 rounded-full object-cover border-2 border-primary/20"
-                        onError={(e) => {
-                          console.log("Image failed to load:", profileImageUrl);
-                          setProfileImageUrl(null);
-                        }}
-                        onLoad={() => console.log("Image loaded successfully:", profileImageUrl)}
+                        width={32}
+                        height={32}
+                        className="rounded-full object-cover border-2 border-primary/20"
+                        onError={() => setProfileImageUrl(null)}
                       />
                     ) : (
                       <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
