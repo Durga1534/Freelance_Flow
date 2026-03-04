@@ -1,26 +1,26 @@
 import { format } from 'date-fns'
-import { PAYMENT_TERMS } from '../constants/invoice.constants'
+import { Databases, Query } from 'appwrite'
 
-export const generateInvoiceNumber = async (databases: any, databaseId: string, collectionId: string) => {
+export const generateInvoiceNumber = async (databases: Databases, databaseId: string, collectionId: string) => {
     try {
-        const response = await databases.listDocuments(databaseId, collectionId, {
-            orderBy: ['invoice_number', 'DESC'],
-            limit: 1,
-        });
+        const response = await databases.listDocuments(databaseId, collectionId, [
+            Query.orderDesc('invoice_number'),
+            Query.limit(1)
+        ]);
 
         const lastInvoice = response.documents[0];
         const currentDate = new Date();
         const year = currentDate.getFullYear();
         const month = (currentDate.getMonth() + 1).toString().padStart(1, '0');
 
-        if(!lastInvoice) {
+        if (!lastInvoice) {
             return `INV-${year}${month}-0001`
         }
 
         const lastNumber = parseInt(lastInvoice.invoice_number.split('-').pop());
         const newNumber = (lastNumber + 1).toString().padStart(4, '0');
         return `INV-${year}${month}-${newNumber}`;
-    }catch(err) {
+    } catch (err) {
         console.error('Error generating invoice number: ', err);
         return `INV-${Date.now()}`;
     }
@@ -35,12 +35,12 @@ export const calculateDueDate = (invoiceDate: Date, paymentTerms: number) => {
 
 
 export const calculateInvoiceTotals = (
-    items: Array<{quantity: number, rate: number}>,
+    items: Array<{ quantity: number, rate: number }>,
     taxRate: number,
     discountType: 'percentage' | 'fixed',
     discountValue: number
 ) => {
-    const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.rate) , 0);
+    const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.rate), 0);
     const discountAmount = discountType === 'percentage' ? (subtotal * discountValue) / 100 : discountValue;
     const taxableAmount = subtotal - discountAmount;
     const taxAmount = (taxableAmount * taxRate) / 100;

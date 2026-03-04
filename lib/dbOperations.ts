@@ -10,7 +10,7 @@ const PAYMENTS_ID = process.env.NEXT_PUBLIC_COLLECTION_PAYMENT_ID!;
 const getQuery = (userId?: string) =>
   userId ? [Query.equal("userId", userId)] : [];
 
-export default {
+const dbOperations = {
   clients: {
     getAll: async (userId?: string) => {
       return await databases.listDocuments(databaseId, CLIENTS_ID, getQuery(userId));
@@ -41,3 +41,5 @@ export default {
     },
   },
 };
+
+export default dbOperations;

@@ -2,22 +2,23 @@ import { storage, databases } from './appwrite';
 
 // Configuration
 const BUCKET_ID = process.env.NEXT_PUBLIC_BUCKET_ID!;
-const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!; 
+const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
 const USERS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_USERS_ID!;
 
 // Upload profile image
-export const uploadProfileImage = async (file, userId) => {
+export const uploadProfileImage = async (file: File, userId: string) => {
   try {
-    
+
     const uploadedFile = await storage.createFile(BUCKET_ID, 'unique()', file);
-    
-   
+
+
     try {
       await databases.updateDocument(DATABASE_ID, USERS_COLLECTION_ID, userId, {
         profileImageId: uploadedFile.$id
       });
-    } catch (error) {
-      if (error.code === 404) {
+    } catch (error: unknown) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((error as any).code === 404) {
         await databases.createDocument(DATABASE_ID, USERS_COLLECTION_ID, userId, {
           userId: userId,
           profileImageId: uploadedFile.$id
@@ -26,7 +27,7 @@ export const uploadProfileImage = async (file, userId) => {
         throw error;
       }
     }
-    
+
     return uploadedFile.$id;
   } catch (error) {
     console.error('Profile upload failed:', error);
@@ -35,12 +36,12 @@ export const uploadProfileImage = async (file, userId) => {
 };
 
 // Get profile image URL
-export const getProfileImageUrl = (fileId, width = 100, height = 100) => {
+export const getProfileImageUrl = (fileId: string) => {
   if (!fileId) return null;
   try {
-   
+
     const viewUrl = storage.getFileView(BUCKET_ID, fileId);
-    return viewUrl.href || viewUrl; 
+    return viewUrl.toString();
   } catch (error) {
     console.error('Error getting profile image URL:', error);
     return null;
@@ -48,12 +49,12 @@ export const getProfileImageUrl = (fileId, width = 100, height = 100) => {
 };
 
 // Delete profile image
-export const deleteProfileImage = async (fileId, userId) => {
+export const deleteProfileImage = async (fileId: string, userId: string) => {
   try {
-    
+
     await storage.deleteFile(BUCKET_ID, fileId);
-    
-   
+
+
     await databases.updateDocument(DATABASE_ID, USERS_COLLECTION_ID, userId, {
       profileImageId: null
     });
@@ -64,15 +65,15 @@ export const deleteProfileImage = async (fileId, userId) => {
 };
 
 // Fetch user profile data
-export const fetchUserProfile = async (userId) => {
+export const fetchUserProfile = async (userId: string) => {
   try {
     console.log("Fetching profile for user:", userId);
     const userDoc = await databases.getDocument(DATABASE_ID, USERS_COLLECTION_ID, userId);
     console.log("Retrieved user document:", userDoc);
-    
+
     const profileImageUrl = userDoc.profileImageId ? getProfileImageUrl(userDoc.profileImageId) : null;
     console.log("Generated profile image URL:", profileImageUrl);
-    
+
     return {
       profileImageId: userDoc.profileImageId,
       profileImageUrl: profileImageUrl,
@@ -80,13 +81,13 @@ export const fetchUserProfile = async (userId) => {
     };
   } catch (err) {
     console.log("No user profile found in database, trying file naming convention...", err);
-    
-   
+
+
     try {
       const files = await storage.listFiles(BUCKET_ID);
       console.log("Available files in bucket:", files.files.map(f => ({ id: f.$id, name: f.name })));
-      
-      const profileFile = files.files.find(file => 
+
+      const profileFile = files.files.find(file =>
         file.name.startsWith(`profile_${userId}`) ||
         file.$id === `profile_${userId}` ||
         file.name === `${userId}.jpg` ||
@@ -94,7 +95,7 @@ export const fetchUserProfile = async (userId) => {
         file.name === `${userId}.jpeg` ||
         file.name === `${userId}.webp`
       );
-      
+
       if (profileFile) {
         console.log("Found profile file:", profileFile);
         const profileImageUrl = getProfileImageUrl(profileFile.$id);
@@ -106,7 +107,7 @@ export const fetchUserProfile = async (userId) => {
     } catch (fileErr) {
       console.log("Error searching for profile files:", fileErr);
     }
-    
+
     console.log("No profile image found for user:", userId);
     return { profileImageId: null, profileImageUrl: null };
   }

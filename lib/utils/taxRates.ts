@@ -21,9 +21,9 @@ export const TAX_RATES = {
 } as const;
 
 export const getTaxRate = (country: keyof typeof TAX_RATES, region?: string) => {
-    const countryRates = TAX_RATES[country] || {DEFAULT: 0};
-    if(!region) return countryRates.DEFAULT;
-    return (countryRates as any)[region] || countryRates.DEFAULT;
+    const countryRates = TAX_RATES[country] || { DEFAULT: 0 };
+    if (!region) return countryRates.DEFAULT;
+    return (countryRates as Record<string, number>)[region] || countryRates.DEFAULT;
 };
 
 export const getAvailableRegions = (country: keyof typeof TAX_RATES) => {
