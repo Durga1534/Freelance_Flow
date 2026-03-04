@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: "2024-06-20",
+    apiVersion: "2025-05-28.basil",
 });
 
 export async function POST(req: Request) {
@@ -32,8 +32,8 @@ export async function POST(req: Request) {
                     quantity: 1,
                 },
             ],
-            success_url: `${process.env.NEXTAUTH_URL}/success?invoice=${invoiceId}`,
-            cancel_url: `${process.env.NEXTAUTH_URL}/invoices/${invoiceId}`,
+            success_url: `${req.headers.get("origin") || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/success?invoice=${invoiceId}`,
+            cancel_url: `${req.headers.get("origin") || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/invoices/${invoiceId}`,
             metadata: {
                 invoiceId,
             }
