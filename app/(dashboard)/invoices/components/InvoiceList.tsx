@@ -28,7 +28,7 @@ const InvoicesList = () => {
         const user = await account.get();
 
         const response = await databases.listDocuments(databaseId, collectionId, [Query.equal("userId", user.$id)]);
-        setInvoices(response.documents);
+        setInvoices(response.documents as unknown as Invoice[]);
       } catch (err) {
         setError("Failed to load invoices.");
         console.error(err);

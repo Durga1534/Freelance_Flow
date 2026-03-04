@@ -36,7 +36,8 @@ interface AppwriteUser {
 
 interface SearchResult {
   $id: string;
-  _collection: "clients" | "projects" | "invoices" | "timeEntries";
+  collection?: string;
+  _collection?: "clients" | "projects" | "invoices" | "timeEntries" | string;
   name?: string;
   invoice_number?: string;
   task?: string;
@@ -85,7 +86,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         const session = await account.get();
         const userId = session?.$id;
         const data = await globalSearch(search, userId);
-        setResults(data);
+        setResults(data as unknown as SearchResult[]);
       } catch {
         setResults([]);
       } finally {
@@ -181,20 +182,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     setSearch("");
     setResults([]);
 
-    if (item._collection === "clients") {
+    const collection = item._collection || item.collection;
+    if (collection === "clients") {
       router.push(`/clients/${item.$id}`);
-    } else if (item._collection === "projects") {
+    } else if (collection === "projects") {
       router.push(`/projects/${item.$id}`);
-    } else if (item._collection === "invoices") {
+    } else if (collection === "invoices") {
       router.push(`/invoices/${item.$id}`);
-    } else if (item._collection === "timeEntries") {
+    } else if (collection === "timeEntries" || collection === "time-tracking") {
       router.push(`/time-tracking`);
     }
   };
 
   const getResultLabel = (item: SearchResult): string => {
-    if (item._collection === "invoices") return item.invoice_number ?? "Untitled";
-    if (item._collection === "timeEntries") return item.task ?? "Untitled";
+    const col = item._collection || item.collection;
+    if (col === "invoices") return item.invoice_number ?? "Untitled";
+    if (col === "timeEntries" || col === "time-tracking") return item.task ?? "Untitled";
     return item.name ?? "Untitled";
   };
 
@@ -329,7 +332,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             className="cursor-pointer p-3 hover:bg-muted transition-colors"
                           >
                             <div className="text-xs text-muted-foreground capitalize mb-0.5">
-                              {item._collection}
+                              {item._collection || item.collection}
                             </div>
                             <div className="text-sm font-medium text-popover-foreground">
                               {getResultLabel(item)}

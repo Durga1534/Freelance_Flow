@@ -5,13 +5,19 @@ import Image from 'next/image';
 import { Camera, Upload, X } from 'lucide-react';
 import { uploadProfileImage, deleteProfileImage } from '@/lib/profile';
 
-export default function ProfileUpload({ userId, currentImageUrl, onImageUpdate }) {
+interface ProfileUploadProps {
+  userId?: string;
+  currentImageUrl: string | null;
+  onImageUpdate?: (fileId: string | null) => void;
+}
+
+export default function ProfileUpload({ userId, currentImageUrl, onImageUpdate }: ProfileUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(currentImageUrl);
-  const fileInputRef = useRef(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = async (event) => {
-    const file = event.target.files[0];
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     if (!file) return;
 
     // Validate file type
@@ -28,14 +34,16 @@ export default function ProfileUpload({ userId, currentImageUrl, onImageUpdate }
 
     try {
       setUploading(true);
-      
+
       // Create preview
       const preview = URL.createObjectURL(file);
       setPreviewUrl(preview);
 
+      if (!userId) throw new Error('User ID is required');
+
       // Upload file
       const fileId = await uploadProfileImage(file, userId);
-      
+
       // Notify parent component
       if (onImageUpdate) {
         onImageUpdate(fileId);
@@ -43,7 +51,7 @@ export default function ProfileUpload({ userId, currentImageUrl, onImageUpdate }
 
       // Clean up preview URL
       URL.revokeObjectURL(preview);
-      
+
     } catch (error) {
       console.error('Upload failed:', error);
       alert('Failed to upload profile image');
@@ -54,13 +62,13 @@ export default function ProfileUpload({ userId, currentImageUrl, onImageUpdate }
   };
 
   const handleRemoveImage = async () => {
-    if (!currentImageUrl) return;
+    if (!currentImageUrl || !userId) return;
 
     try {
       setUploading(true);
       await deleteProfileImage(currentImageUrl, userId);
       setPreviewUrl(null);
-      
+
       if (onImageUpdate) {
         onImageUpdate(null);
       }
@@ -88,7 +96,7 @@ export default function ProfileUpload({ userId, currentImageUrl, onImageUpdate }
             <Camera className="w-8 h-8 text-gray-400" />
           </div>
         )}
-        
+
         {/* Upload Button */}
         <button
           onClick={() => fileInputRef.current?.click()}

@@ -76,7 +76,7 @@ const InvoiceDetails = () => {
     const fetchInvoice = async () => {
       try {
         const data = await databases.getDocument(databaseId, collectionId, invoiceId as string);
-        setInvoice(data);
+        setInvoice(data as unknown as InvoiceData);
       } catch (error) {
         console.error("Failed to fetch invoice:", error);
         setInvoice(null);
@@ -101,7 +101,7 @@ const InvoiceDetails = () => {
             paid_amount: invoice.total_amount,
           });
           const updatedInvoice = await databases.getDocument(databaseId, collectionId, invoiceId as string);
-          setInvoice(updatedInvoice);
+          setInvoice(updatedInvoice as unknown as InvoiceData);
           console.log("Invoice updated successfully");
         } catch (err) {
           console.error("Failed to update invoice:", err);

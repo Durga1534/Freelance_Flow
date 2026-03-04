@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { account, databases, Query } from "@/lib/appwrite";
 import Link from "next/link";
-import { MoreHorizontal, Tag } from "lucide-react";
+import { Tag, Pencil } from "lucide-react";
 
 const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
 const collectionId = process.env.NEXT_PUBLIC_COLLECTION_PROJECTS_ID!;
@@ -44,7 +44,7 @@ export default function ProjectsList() {
       const user = await account.get();
 
       const response = await databases.listDocuments(databaseId, collectionId, [Query.equal("userId", user.$id)]);
-      setProjects(response.documents as Project[]);
+      setProjects(response.documents as unknown as Project[]);
     } catch (err) {
       console.error("Error fetching projects:", err);
     } finally {
@@ -129,10 +129,9 @@ export default function ProjectsList() {
                   </td>
                   <td className="px-4 py-3 max-w-xs truncate">{project.description || "-"}</td>
                   <td className="px-4 py-3 text-right">
-                    <MoreHorizontal
-                      className="h-5 w-5 text-muted-foreground hover:text-foreground cursor-pointer"
-                      title="Actions"
-                    />
+                    <span title="Edit Project">
+                      <Pencil className="h-5 w-5 text-muted-foreground hover:text-foreground cursor-pointer" />
+                    </span>
                   </td>
                 </tr>
               ))}

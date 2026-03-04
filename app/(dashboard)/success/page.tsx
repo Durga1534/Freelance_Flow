@@ -9,6 +9,7 @@ const invoiceCollectionId = process.env.NEXT_PUBLIC_COLLECTION_INVOICES_ID!;
 const itemCollectionId = process.env.NEXT_PUBLIC_COLLECTION_INVOICES_ITEMS_ID!;
 
 interface InvoiceData {
+  $id: string;
   invoice_number: string;
   status: string;
   currency: string;
@@ -56,8 +57,8 @@ export default function SuccessPage() {
           ]),
         ]);
 
-        setInvoice(invoiceDoc);
-        setItems(itemDocs.documents);
+        setInvoice(invoiceDoc as unknown as InvoiceData);
+        setItems(itemDocs.documents as unknown as InvoiceItem[]);
       } catch (err) {
         console.error("Fetch error:", err);
       } finally {
@@ -79,7 +80,7 @@ export default function SuccessPage() {
         console.error("Error updating invoice:", err);
       });
     }
-  }, [invoice]);
+  }, [invoice, invoiceId]);
 
 
   if (loading) return <p className="p-4 text-muted-foreground">Loading invoice...</p>;
@@ -91,9 +92,9 @@ export default function SuccessPage() {
 
       <div className="bg-card p-4 rounded shadow">
         <p className="font-medium">Invoice ID: {invoice.$id}</p>
-        <p className="text-muted-foreground">Email: {invoice.email}</p>
+        <p className="text-muted-foreground">Email: {invoice.client_email}</p>
         <p className="text-muted-foreground">Status: {invoice.status}</p>
-        <p className="text-muted-foreground">Total: ₹{invoice.total}</p>
+        <p className="text-muted-foreground">Total: ₹{invoice.total_amount}</p>
       </div>
 
       <div className="bg-muted p-4 rounded shadow">
@@ -115,8 +116,8 @@ export default function SuccessPage() {
                 <tr key={item.$id} className="border-t">
                   <td>{item.description}</td>
                   <td>{item.quantity}</td>
-                  <td>{item.unit_price}</td>
-                  <td>{item.total_price}</td>
+                  <td>{item.rate}</td>
+                  <td>{item.amount}</td>
                 </tr>
               ))}
             </tbody>

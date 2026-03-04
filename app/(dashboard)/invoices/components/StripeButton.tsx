@@ -133,7 +133,7 @@ function StripeButton({
         <div className="space-y-2">
             <button
                 onClick={handlePayment}
-                disabled={loading || status === "paid" || !validAmount}
+                disabled={loading || !validAmount}
                 className={`
                     px-6 py-3 rounded-lg font-medium transition-colors shadow-sm
                     ${loading || !validAmount

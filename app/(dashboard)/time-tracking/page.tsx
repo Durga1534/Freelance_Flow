@@ -56,7 +56,7 @@ export default function TimeTrackingPage() {
       const res = await databases.listDocuments(databaseId, projectCollectionId, [
         Query.equal("userId", user.$id),
       ]);
-      setProjects(res.documents as Project[]);
+      setProjects(res.documents as unknown as Project[]);
     } catch {
       // Projects may not exist yet — silently continue
     }
@@ -70,7 +70,7 @@ export default function TimeTrackingPage() {
         Query.equal("userId", user.$id),
         Query.orderDesc("$createdAt"),
       ]);
-      setEntries(res.documents as TimeEntry[]);
+      setEntries(res.documents as unknown as TimeEntry[]);
     } finally {
       setLoading(false);
     }
@@ -79,7 +79,6 @@ export default function TimeTrackingPage() {
   useEffect(() => {
     fetchProjects();
     fetchEntries();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleChange = (

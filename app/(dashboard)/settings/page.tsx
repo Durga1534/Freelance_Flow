@@ -83,63 +83,6 @@ export default function SettingsPage() {
     window.dispatchEvent(new CustomEvent("profile-updated"));
   };
 
-  const uploadProfileImage = async (file: File, userId: string) => {
-    try {
-      const uploadedFile = await storage.createFile(BUCKET_ID, "unique()", file);
-      try {
-        await databases.updateDocument(DATABASE_ID, USERS_COLLECTION_ID, userId, {
-          profileImageId: uploadedFile.$id,
-          name,
-          email,
-        });
-      } catch (error: unknown) {
-        const appwriteError = error as { code?: number };
-        if (appwriteError.code === 404) {
-          await databases.createDocument(DATABASE_ID, USERS_COLLECTION_ID, userId, {
-            userId,
-            profileImageId: uploadedFile.$id,
-            name,
-            email,
-          });
-        } else {
-          throw error;
-        }
-      }
-      return uploadedFile.$id;
-    } catch (error) {
-      console.error("Profile upload failed:", error);
-      throw error;
-    }
-  };
-
-  const deleteProfileImage = async (_currentImageId: string, userId: string) => {
-    try {
-      let fileIdToDelete: string | null = null;
-      try {
-        const userDoc = await databases.getDocument(DATABASE_ID, USERS_COLLECTION_ID, userId);
-        fileIdToDelete = userDoc.profileImageId as string;
-      } catch {
-        const files = await storage.listFiles(BUCKET_ID);
-        const profileFile = files.files.find((file) =>
-          file.name.startsWith(`profile_${userId}`)
-        );
-        if (profileFile) {
-          fileIdToDelete = profileFile.$id;
-        }
-      }
-
-      if (fileIdToDelete) {
-        await storage.deleteFile(BUCKET_ID, fileIdToDelete);
-        await databases.updateDocument(DATABASE_ID, USERS_COLLECTION_ID, userId, {
-          profileImageId: null,
-        });
-      }
-    } catch (error) {
-      console.error("Profile deletion failed:", error);
-      throw error;
-    }
-  };
-
   const handleSave = async () => {
     if (!user) return;
     setLoading(true);
@@ -226,8 +169,6 @@ export default function SettingsPage() {
               userId={user?.$id}
               currentImageUrl={profileImageUrl}
               onImageUpdate={handleProfileImageUpdate}
-              uploadFunction={uploadProfileImage}
-              deleteFunction={deleteProfileImage}
             />
           </div>
         </div>
