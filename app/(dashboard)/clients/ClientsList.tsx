@@ -25,28 +25,24 @@ const ClientsList = () => {
   const [editId, setEditId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Client>>({});
   const [saving, setSaving] = useState(false);
-  const [currentUser, setCurrentUser] = useState<any>(null); // Fixed: Added missing state
-  const [error, setError] = useState<string | null>(null); // Added: Error state
+  const [error, setError] = useState<string | null>(null);
 
   const fetchClients = async () => {
     setLoading(true);
     setError(null);
     try {
       const user = await account.get();
-      setCurrentUser(user);
 
-      // Handle userId length issue similar to ClientForm
       let userId = String(user.$id);
       if (userId.length > 20) {
-        userId = btoa(userId).substring(0, 20).replace(/[+/=]/g, '');
+        userId = btoa(userId).substring(0, 20).replace(/[+/=]/g, "");
       }
 
       const res = await databases.listDocuments(databaseId, collectionId, [
-        Query.equal("userId", userId)
+        Query.equal("userId", userId),
       ]);
-      setClients(res.documents as Client[]);
-    } catch (err) {
-      console.error("Failed to fetch clients", err);
+      setClients(res.documents as unknown as Client[]);
+    } catch {
       setError("Failed to load clients. Please try again.");
     } finally {
       setLoading(false);
@@ -86,9 +82,8 @@ const ClientsList = () => {
       setEditId(null);
       setEditForm({});
       fetchClients();
-    } catch (err) {
-      console.error("Failed to update client:", err);
-      alert("Failed to update client.");
+    } catch {
+      setError("Failed to update client. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -99,23 +94,17 @@ const ClientsList = () => {
     try {
       await databases.deleteDocument(databaseId, collectionId, clientId);
       setClients(clients.filter((c) => c.$id !== clientId));
-    } catch (err) {
-      console.error("Failed to delete client:", err);
-      alert("Failed to delete client.");
+    } catch {
+      setError("Failed to delete client. Please try again.");
     }
   };
 
-  // Show error state
   if (error) {
     return (
-      <div className="mt-8 p-6 bg-red-50 rounded-xl border border-red-200">
-        <h2 className="text-xl font-semibold text-red-900 mb-2">Error</h2>
-        <p className="text-red-700">{error}</p>
-        <Button 
-          onClick={fetchClients} 
-          className="mt-4"
-          variant="outline"
-        >
+      <div className="mt-8 p-6 bg-destructive/10 rounded-xl border border-destructive/30">
+        <h2 className="text-xl font-semibold text-destructive mb-2">Error</h2>
+        <p className="text-destructive/80">{error}</p>
+        <Button onClick={fetchClients} className="mt-4" variant="outline">
           Try Again
         </Button>
       </div>
@@ -123,9 +112,9 @@ const ClientsList = () => {
   }
 
   return (
-    <div className="mt-8 p-6 bg-white rounded-xl border shadow-sm">
+    <div className="mt-8 p-6 bg-card rounded-xl border border-border shadow-sm">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-gray-900">Clients</h2>
+        <h2 className="text-xl font-semibold text-card-foreground">Clients</h2>
         <p className="text-sm text-muted-foreground">{clients.length} total</p>
       </div>
 
@@ -139,7 +128,7 @@ const ClientsList = () => {
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-muted bg-background">
+        <div className="overflow-x-auto rounded-lg border border-border bg-background">
           <table className="w-full text-sm text-left">
             <thead className="bg-muted text-muted-foreground uppercase text-xs">
               <tr>
@@ -157,21 +146,23 @@ const ClientsList = () => {
                   key={client.$id}
                   className={cn(
                     "border-t border-border",
-                    idx % 2 === 0 ? "bg-white" : "bg-muted/10",
+                    idx % 2 === 0 ? "bg-card" : "bg-muted/10",
                     "hover:bg-muted/40"
                   )}
                 >
                   {editId === client.$id ? (
                     <>
-                      {["name", "email", "phone", "company", "notes"].map((field) => (
-                        <td className="px-4 py-2" key={field}>
-                          <Input
-                            name={field}
-                            value={editForm[field as keyof Client] || ""}
-                            onChange={handleEditChange}
-                          />
-                        </td>
-                      ))}
+                      {(["name", "email", "phone", "company", "notes"] as (keyof Client)[]).map(
+                        (field) => (
+                          <td className="px-4 py-2" key={field}>
+                            <Input
+                              name={field}
+                              value={(editForm[field] as string) || ""}
+                              onChange={handleEditChange}
+                            />
+                          </td>
+                        )
+                      )}
                       <td className="px-4 py-2 space-x-2">
                         <Button size="sm" variant="default" onClick={saveEdit} disabled={saving}>
                           {saving ? "Saving..." : "Save"}
@@ -183,16 +174,20 @@ const ClientsList = () => {
                     </>
                   ) : (
                     <>
-                      <td className="px-4 py-2">{client.name}</td>
-                      <td className="px-4 py-2">{client.email}</td>
-                      <td className="px-4 py-2">{client.phone}</td>
-                      <td className="px-4 py-2">{client.company}</td>
-                      <td className="px-4 py-2">{client.notes}</td>
+                      <td className="px-4 py-2 text-foreground">{client.name}</td>
+                      <td className="px-4 py-2 text-foreground">{client.email}</td>
+                      <td className="px-4 py-2 text-foreground">{client.phone}</td>
+                      <td className="px-4 py-2 text-foreground">{client.company}</td>
+                      <td className="px-4 py-2 text-muted-foreground">{client.notes}</td>
                       <td className="px-4 py-2 space-x-2">
                         <Button size="sm" variant="outline" onClick={() => startEdit(client)}>
                           Edit
                         </Button>
-                        <Button size="sm" variant="destructive" onClick={() => handleDelete(client.$id)}>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDelete(client.$id)}
+                        >
                           Delete
                         </Button>
                       </td>

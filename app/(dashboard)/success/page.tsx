@@ -8,12 +8,39 @@ const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
 const invoiceCollectionId = process.env.NEXT_PUBLIC_COLLECTION_INVOICES_ID!;
 const itemCollectionId = process.env.NEXT_PUBLIC_COLLECTION_INVOICES_ITEMS_ID!;
 
+interface InvoiceData {
+  invoice_number: string;
+  status: string;
+  currency: string;
+  invoice_date: string;
+  due_date: string;
+  client_email: string;
+  client_company: string;
+  business_name: string;
+  business_email: string;
+  subtotal: number;
+  tax_rate: number;
+  tax_amount: number;
+  discount_type: string;
+  discount_value: number;
+  total_amount: number;
+  paid_amount: number;
+}
+
+interface InvoiceItem {
+  $id: string;
+  description: string;
+  quantity: number;
+  rate: number;
+  amount: number;
+}
+
 export default function SuccessPage() {
   const searchParams = useSearchParams();
   const invoiceId = searchParams.get("invoice");
 
-  const [invoice, setInvoice] = useState<any>(null);
-  const [items, setItems] = useState<any[]>([]);
+  const [invoice, setInvoice] = useState<InvoiceData | null>(null);
+  const [items, setItems] = useState<InvoiceItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -42,17 +69,17 @@ export default function SuccessPage() {
   }, [invoiceId]);
 
   useEffect(() => {
-  if (invoice && invoice.status !== "paid") {
-    databases.updateDocument(databaseId, invoiceCollectionId, invoiceId!, {
-      status: "paid",
-      payment_date: new Date().toISOString(),
-    }).then(() => {
-      console.log("Invoice updated to paid");
-    }).catch((err) => {
-      console.error("Error updating invoice:", err);
-    });
-  }
-}, [invoice]);
+    if (invoice && invoice.status !== "paid") {
+      databases.updateDocument(databaseId, invoiceCollectionId, invoiceId!, {
+        status: "paid",
+        payment_date: new Date().toISOString(),
+      }).then(() => {
+        console.log("Invoice updated to paid");
+      }).catch((err) => {
+        console.error("Error updating invoice:", err);
+      });
+    }
+  }, [invoice]);
 
 
   if (loading) return <p className="p-4 text-muted-foreground">Loading invoice...</p>;

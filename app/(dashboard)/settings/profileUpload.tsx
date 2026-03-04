@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from 'react';
+import Image from 'next/image';
 import { Camera, Upload, X } from 'lucide-react';
 import { uploadProfileImage, deleteProfileImage } from '@/lib/profile';
 
@@ -75,9 +76,11 @@ export default function ProfileUpload({ userId, currentImageUrl, onImageUpdate }
     <div className="flex flex-col items-center space-y-4">
       <div className="relative">
         {previewUrl ? (
-          <img
+          <Image
             src={previewUrl}
             alt="Profile"
+            width={96}
+            height={96}
             className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
           />
         ) : (

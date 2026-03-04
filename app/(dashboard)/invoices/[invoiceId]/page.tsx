@@ -11,7 +11,7 @@ const collectionId = process.env.NEXT_PUBLIC_COLLECTION_INVOICES_ID!;
 async function downloadPDF(html: string) {
   const response = await fetch("/api/pdf/generate", {
     method: "POST",
-    headers: {"Content-Type" : "application/js"},
+    headers: { "Content-Type": "application/js" },
     body: JSON.stringify({ html }),
   });
   const blob = await response.blob();
@@ -23,8 +23,27 @@ async function downloadPDF(html: string) {
   window.URL.revokeObjectURL(url);
 }
 
+interface InvoiceData {
+  invoice_number: string;
+  status: string;
+  currency: string;
+  invoice_date: string;
+  due_date: string;
+  client_email: string;
+  client_company: string;
+  business_name: string;
+  business_email: string;
+  subtotal: number;
+  tax_rate: number;
+  tax_amount: number;
+  discount_type: string;
+  discount_value: number;
+  total_amount: number;
+  paid_amount: number;
+}
+
 //Printable invoice component for PDF
-function PrintableInvoice({ invoice } : {invoice: any}) {
+function PrintableInvoice({ invoice }: { invoice: InvoiceData }) {
   return (
     <div style={{ fontFamily: "sans-serif", padding: 24 }}>
       <h1 style={{ color: "#2563eb" }}>Invoice #{invoice.invoice_number}</h1>
@@ -49,101 +68,102 @@ function PrintableInvoice({ invoice } : {invoice: any}) {
 }
 
 const InvoiceDetails = () => {
-    const {invoiceId} = useParams();
-    const [invoice, setInvoice] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
+  const { invoiceId } = useParams();
+  const [invoice, setInvoice] = useState<InvoiceData | null>(null);
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
+  useEffect(() => {
     const fetchInvoice = async () => {
-        try {
-            const data = await databases.getDocument(databaseId, collectionId, invoiceId as string);
-            setInvoice(data);
-        }catch(err) {
-            setInvoice(null);
-        }finally {
-            setLoading(false);
-        }
+      try {
+        const data = await databases.getDocument(databaseId, collectionId, invoiceId as string);
+        setInvoice(data);
+      } catch (error) {
+        console.error("Failed to fetch invoice:", error);
+        setInvoice(null);
+      } finally {
+        setLoading(false);
+      }
     };
     if (invoiceId) fetchInvoice();
-}, [invoiceId]);
+  }, [invoiceId]);
 
-useEffect(() => {
-  const updatePaidStatus = async () => {
-    if (
-      invoice && 
-      invoice.status !== "paid" && 
-      typeof invoice.total_amount === "number"
-    ) {
-      try {
-        await databases.updateDocument(databaseId, collectionId, invoiceId as string, {
-          status: "paid",
-          payment_date: new Date().toISOString(),
-          paid_amount: invoice.total_amount,
-        });
-        const updatedInvoice = await databases.getDocument(databaseId, collectionId, invoiceId as string);
-        setInvoice(updatedInvoice);
-        console.log("Invoice updated successfully");
-      } catch (err) {
-        console.error("Failed to update invoice:", err);
+  useEffect(() => {
+    const updatePaidStatus = async () => {
+      if (
+        invoice &&
+        invoice.status !== "paid" &&
+        typeof invoice.total_amount === "number"
+      ) {
+        try {
+          await databases.updateDocument(databaseId, collectionId, invoiceId as string, {
+            status: "paid",
+            payment_date: new Date().toISOString(),
+            paid_amount: invoice.total_amount,
+          });
+          const updatedInvoice = await databases.getDocument(databaseId, collectionId, invoiceId as string);
+          setInvoice(updatedInvoice);
+          console.log("Invoice updated successfully");
+        } catch (err) {
+          console.error("Failed to update invoice:", err);
+        }
       }
-    }
-  };
+    };
 
-  updatePaidStatus();
-}, [invoice, invoiceId]);
+    updatePaidStatus();
+  }, [invoice, invoiceId]);
 
 
-if (loading) return <div className="p-8">Loading...</div>
-if (!invoice) return <div className="p-8 text-destructive">Invoice not found.</div>
+  if (loading) return <div className="p-8">Loading...</div>
+  if (!invoice) return <div className="p-8 text-destructive">Invoice not found.</div>
   return (
-      <div className="max-w-3xl mx-auto bg-card p-6 rounded-lg shadow mt-10 space-y-6">
-        <h1 className="text-2xl font-bold text-primary">Invoice #{invoice.invoice_number}</h1>
+    <div className="max-w-3xl mx-auto bg-card p-6 rounded-lg shadow mt-10 space-y-6">
+      <h1 className="text-2xl font-bold text-primary">Invoice #{invoice.invoice_number}</h1>
 
-        {/*Download PDF Button */}
-        <button
-          className="mb-4 px-4 py-2 bg-purple-400 text-white rounded hover:bg-purple-500"
-          onClick={() => {
-            const html = ReactDOMServer.renderToStaticMarkup(
-              <PrintableInvoice invoice={invoice} />
-            );
-            downloadPDF(html);
-          }}
-        
-        >
-          Download PDF
-        </button>
+      {/*Download PDF Button */}
+      <button
+        className="mb-4 px-4 py-2 bg-purple-400 text-white rounded hover:bg-purple-500"
+        onClick={() => {
+          const html = ReactDOMServer.renderToStaticMarkup(
+            <PrintableInvoice invoice={invoice} />
+          );
+          downloadPDF(html);
+        }}
 
-        {/* Status + Dates */}
-        <div className="grid grid-cols-2 gap-4 bg-muted p-4 rounded">
-            <div><strong>Status:</strong> {invoice.status}</div>
-            <div><strong>Currency:</strong> {invoice.currency}</div>
-            <div><strong>Invoice Date:</strong> {invoice.invoice_date}</div>
-            <div><strong>Due Date:</strong> {invoice.due_date}</div>
-        </div>
+      >
+        Download PDF
+      </button>
 
-        {/* Client Info */}
-        <div className="bg-muted p-4 rounded">
-            <h2 className="text-lg font-semibold mb-2">Client Info</h2>
-            <div><strong>Email:</strong> {invoice.client_email}</div>
-            <div><strong>Company:</strong> {invoice.client_company}</div>
-        </div>
+      {/* Status + Dates */}
+      <div className="grid grid-cols-2 gap-4 bg-muted p-4 rounded">
+        <div><strong>Status:</strong> {invoice.status}</div>
+        <div><strong>Currency:</strong> {invoice.currency}</div>
+        <div><strong>Invoice Date:</strong> {invoice.invoice_date}</div>
+        <div><strong>Due Date:</strong> {invoice.due_date}</div>
+      </div>
 
-        {/* Business Info */}
-        <div className="bg-muted p-4 rounded">
-            <h2 className="text-lg font-semibold mb-2">Business Info</h2>
-            <div><strong>Name:</strong> {invoice.business_name}</div>
-            <div><strong>Email:</strong> {invoice.business_email}</div>
-        </div>
+      {/* Client Info */}
+      <div className="bg-muted p-4 rounded">
+        <h2 className="text-lg font-semibold mb-2">Client Info</h2>
+        <div><strong>Email:</strong> {invoice.client_email}</div>
+        <div><strong>Company:</strong> {invoice.client_company}</div>
+      </div>
 
-        {/* Financial Summary */}
-        <div className="bg-muted p-4 rounded">
-            <h2 className="text-lg font-semibold mb-2">Amount Summary</h2>
-            <div className="flex justify-between"><span>Subtotal:</span><span>{invoice.subtotal}</span></div>
-            <div className="flex justify-between"><span>Tax ({invoice.tax_rate}%):</span><span>{invoice.tax_amount}</span></div>
-            <div className="flex justify-between"><span>Discount ({invoice.discount_type}):</span><span>-{invoice.discount_value}</span></div>
-            <div className="flex justify-between font-bold text-lg border-t pt-2"><span>Total:</span><span>{invoice.total_amount}</span></div>
-            <div className="flex justify-between"><span>Paid:</span><span>{invoice.paid_amount}</span></div>
-        </div>
+      {/* Business Info */}
+      <div className="bg-muted p-4 rounded">
+        <h2 className="text-lg font-semibold mb-2">Business Info</h2>
+        <div><strong>Name:</strong> {invoice.business_name}</div>
+        <div><strong>Email:</strong> {invoice.business_email}</div>
+      </div>
+
+      {/* Financial Summary */}
+      <div className="bg-muted p-4 rounded">
+        <h2 className="text-lg font-semibold mb-2">Amount Summary</h2>
+        <div className="flex justify-between"><span>Subtotal:</span><span>{invoice.subtotal}</span></div>
+        <div className="flex justify-between"><span>Tax ({invoice.tax_rate}%):</span><span>{invoice.tax_amount}</span></div>
+        <div className="flex justify-between"><span>Discount ({invoice.discount_type}):</span><span>-{invoice.discount_value}</span></div>
+        <div className="flex justify-between font-bold text-lg border-t pt-2"><span>Total:</span><span>{invoice.total_amount}</span></div>
+        <div className="flex justify-between"><span>Paid:</span><span>{invoice.paid_amount}</span></div>
+      </div>
     </div>
 
   )

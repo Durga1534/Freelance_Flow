@@ -29,7 +29,7 @@ function ClientForm({ onClientAdded }: ClientFormProps) {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<{ $id: string; name?: string; email: string } | null>(null);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -41,7 +41,7 @@ function ClientForm({ onClientAdded }: ClientFormProps) {
         setError("Please log in to add clients.");
       }
     };
-    
+
     checkUser();
   }, []);
 
@@ -60,14 +60,14 @@ function ClientForm({ onClientAdded }: ClientFormProps) {
 
     try {
       const user = await account.get();
-      
+
       if (!user || !user.$id) {
         throw new Error("User session not found. Please log in again.");
       }
 
       // Convert user ID to string and ensure it's not too long
       let userId = String(user.$id);
-      
+
       // If userId is longer than 20 chars, create a hash or use a different approach
       if (userId.length > 20) {
         // Option 2: Create a hash (better approach)
@@ -83,9 +83,9 @@ function ClientForm({ onClientAdded }: ClientFormProps) {
       };
 
       const result = await databases.createDocument(
-        databaseId, 
-        collectionId, 
-        ID.unique(), 
+        databaseId,
+        collectionId,
+        ID.unique(),
         documentData
       );
 
@@ -99,23 +99,25 @@ function ClientForm({ onClientAdded }: ClientFormProps) {
         company: "",
         notes: ""
       });
-      
+
       onClientAdded();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error adding client:", err);
-      
+
       let errorMessage = "Failed to add client. Please try again.";
-      
-      if (err.code === 401) {
-        errorMessage = "Authentication failed. Please log in again.";
-      } else if (err.code === 400) {
-        errorMessage = "Invalid data format. Please check all fields.";
-      } else if (err.message?.includes("Invalid document structure")) {
-        errorMessage = "Data validation failed. Please contact support.";
-      } else if (err.message) {
-        errorMessage = err.message;
+
+      if (err instanceof Error) {
+        if ('code' in err && err.code === 401) {
+          errorMessage = "Authentication failed. Please log in again.";
+        } else if ('code' in err && err.code === 400) {
+          errorMessage = "Invalid data format. Please check all fields.";
+        } else if (err.message?.includes("Invalid document structure")) {
+          errorMessage = "Data validation failed. Please contact support.";
+        } else if (err.message) {
+          errorMessage = err.message;
+        }
       }
-      
+
       setError(errorMessage);
     } finally {
       setLoading(false);

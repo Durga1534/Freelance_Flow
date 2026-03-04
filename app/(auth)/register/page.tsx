@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -28,7 +28,7 @@ function RegisterPage() {
     const hasUpperCase = /[A-Z]/.test(pwd)
     const hasLowerCase = /[a-z]/.test(pwd)
     const hasNumbers = /\d/.test(pwd)
-    
+
     return {
       isValid: minLength && hasUpperCase && hasLowerCase && hasNumbers,
       minLength,
@@ -76,32 +76,30 @@ function RegisterPage() {
     try {
       // Generate a unique user ID
       const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-      
+
       await account.create(userId, email, password)
 
       //Create a session immediately after account creation
       await account.createEmailPasswordSession(email, password)
-      
+
       setSuccess("Account created successfully! Redirecting to login...")
-      
+
       // Redirect after a short delay to show success message
       setTimeout(() => {
         router.push("/dashboard")
       }, 2000)
-    } catch (err: any) {
-      console.error("Registration error:", err)
-      
-      // Handle specific Appwrite error codes
+    } catch (err: unknown) {
+      const error = err as { code?: number; message?: string }
       let errorMessage = "Registration failed. Please try again."
-      
-      if (err.code === 409) {
+
+      if (error.code === 409) {
         errorMessage = "An account with this email already exists."
-      } else if (err.code === 400) {
+      } else if (error.code === 400) {
         errorMessage = "Invalid email or password format."
-      } else if (err.message) {
-        errorMessage = err.message
+      } else if (error.message) {
+        errorMessage = error.message
       }
-      
+
       setError(errorMessage)
     } finally {
       setIsLoading(false)
@@ -111,15 +109,15 @@ function RegisterPage() {
   const handleGoogleSignUp = async () => {
     setIsLoading(true)
     setError("")
-    
+
     try {
       await account.createOAuth2Session(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         "google" as any,
         `${window.location.origin}/dashboard`,
         `${window.location.origin}/register`
       )
-    } catch (err: any) {
-      console.error("Google sign-up error:", err)
+    } catch {
       setError("Google sign-up failed. Please try again.")
       setIsLoading(false)
     }
@@ -212,7 +210,7 @@ function RegisterPage() {
                   className="h-11"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-sm font-medium">Password</Label>
                 <div className="relative">
@@ -262,7 +260,7 @@ function RegisterPage() {
                   </div>
                 )}
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirm Password</Label>
                 <div className="relative">
@@ -296,7 +294,7 @@ function RegisterPage() {
                   <p className="text-xs text-red-600">Passwords do not match</p>
                 )}
               </div>
-              
+
               <Button
                 type="submit"
                 className="w-full h-11 text-base font-medium"

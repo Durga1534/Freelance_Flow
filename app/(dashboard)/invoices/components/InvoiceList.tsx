@@ -9,8 +9,16 @@ import StripeButton from "./StripeButton";
 const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
 const collectionId = process.env.NEXT_PUBLIC_COLLECTION_INVOICES_ID!;
 
+interface Invoice {
+  $id: string;
+  invoice_number: string;
+  client_email: string;
+  status: string;
+  total_amount: number;
+}
+
 const InvoicesList = () => {
-  const [invoices, setInvoices] = useState<any[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -58,10 +66,10 @@ const InvoicesList = () => {
               </Link>
 
               {invoice.status !== "paid" && (
-                 <StripeButton
-                    invoiceId={invoice.$id}
-                    amount={invoice.total_amount}
-                    email={invoice.client_email}
+                <StripeButton
+                  invoiceId={invoice.$id}
+                  amount={invoice.total_amount}
+                  email={invoice.client_email}
                 />
               )}
             </div>
